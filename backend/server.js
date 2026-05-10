@@ -242,6 +242,17 @@ app.post('/api/waitlist', async (req, res) => {
     }
 });
 
+// Admin Route to get waitlist
+app.get('/api/admin/waitlist', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM waitlist ORDER BY created_at DESC');
+        res.json({ success: true, count: result.rows.length, users: result.rows });
+    } catch (error) {
+        console.error('Admin Fetch Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch waitlist' });
+    }
+});
+
 const PORT = process.env.PORT || 3050;
 app.listen(PORT, () => {
     console.log(`Voxa Server Network initialized on port ${PORT}`);

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxa | Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0d17;
+            --surface-color: #1a1c29;
+            --primary-color: #00e5ff;
+            --text-secondary: #a0a5b5;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .stats-card {
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .stats-card span {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stats-card strong {
+            font-size: 32px;
+            color: var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface-color);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            text-align: left;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 16px;
+        }
+
+        tr:hover {
+            background: rgba(0, 229, 255, 0.02);
+        }
+
+        .email-cell {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .date-cell {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(0, 229, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Waitlist Control</h1>
+            <button class="refresh-btn" onclick="fetchWaitlist()">Refresh List</button>
+        </header>
+
+        <div class="stats-card">
+            <span>Total Operators Secured</span>
+            <strong id="userCount">0</strong>
+        </div>
+
+        <div id="loading" class="loader"></div>
+
+        <table id="adminTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Email Address</th>
+                    <th>Date Joined</th>
+                </tr>
+            </thead>
+            <tbody id="waitlistBody">
+                <!-- Data will be injected here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:3050/api' 
+            : 'https://voxa-backend-r0ii.onrender.com/api';
+
+        async function fetchWaitlist() {
+            const table = document.getElementById('adminTable');
+            const loader = document.getElementById('loading');
+            const body = document.getElementById('waitlistBody');
+            const count = document.getElementById('userCount');
+
+            loader.style.display = 'block';
+            table.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/waitlist`);
+                const data = await res.json();
+
+                if (data.success) {
+                    count.innerText = data.count;
+                    body.innerHTML = '';
+                    
+                    data.users.forEach(user => {
+                        const date = new Date(user.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        const row = `
+                            <tr>
+                                <td class="email-cell">${user.email}</td>
+                                <td class="date-cell">${date}</td>
+                            </tr>
+                        `;
+                        body.innerHTML += row;
+                    });
+
+                    loader.style.display = 'none';
+                    table.style.display = 'table';
+                }
+            } catch (err) {
+                console.error('Error fetching waitlist:', err);
+                alert('Failed to load waitlist. Is the backend running?');
+            }
+        }
+
+        // Initial load
+        fetchWaitlist();
+    </script>
+</body>
+</html>
