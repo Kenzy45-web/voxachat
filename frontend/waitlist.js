@@ -1,6 +1,6 @@
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://localhost:3050/api' 
-    : 'https://voxa-server-backend.onrender.com/api'; // Replace with your actual Render URL after deployment
+    : 'https://voxa-backend-r0ii.onrender.com/api'; 
 
 document.addEventListener('DOMContentLoaded', () => {
     // === COUNTDOWN LOGIC ===
