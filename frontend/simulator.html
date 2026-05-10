@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic Device Simulator</title>
+    <style>
+        body {
+            background-color: #0b0d17;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #00e5ff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        select, button {
+            padding: 10px 15px;
+            background: #1a1c29;
+            color: #00e5ff;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .workspace {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .scaler {
+            transform-origin: top center;
+            transition: transform 0.3s ease;
+        }
+
+        /* Base Phone Mockup */
+        .phone-mockup {
+            position: relative;
+            background: #000;
+            box-shadow: 
+                inset 0 0 2px 2px #555, 
+                inset 0 0 0 7px #000, 
+                inset 0 0 0 8px #111, 
+                0 30px 60px rgba(0,0,0,0.8);
+            padding: 15px;
+            box-sizing: border-box;
+            transition: width 0.3s, height 0.3s, border-radius 0.3s;
+        }
+
+        /* Screen Container */
+        .phone-screen {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #0b0d17;
+            overflow: hidden; 
+            mask-image: radial-gradient(white, black);
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            transition: border-radius 0.3s;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Hardware Buttons (Base) */
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 150px;
+            width: 4px;
+            height: 30px;
+            background: #333;
+            border-radius: 2px 0 0 2px;
+            box-shadow: 0 60px 0 #333, 0 120px 0 #333;
+        }
+        
+        .phone-mockup::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: 180px;
+            width: 4px;
+            height: 50px;
+            background: #333;
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* ================= DEVICE: iPHONE 14 PRO ================= */
+        .device-iphone14 {
+            width: 430px;
+            height: 880px;
+            border-radius: 55px;
+        }
+        .device-iphone14 .phone-screen { border-radius: 40px; }
+        .device-iphone14 .sensor {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 100;
+        }
+        .device-iphone14 .sensor::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 70% 30%, #444, #000);
+            box-shadow: inset 0 0 2px rgba(255,255,255,0.5);
+        }
+
+        /* ================= DEVICE: GALAXY S22 ================= */
+        .device-galaxys22 {
+            width: 380px;
+            height: 800px;
+            border-radius: 40px;
+        }
+        .device-galaxys22 .phone-screen { border-radius: 25px; }
+        .device-galaxys22 .sensor {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: #000;
+            border-radius: 50%;
+            z-index: 100;
+            box-shadow: 0 0 0 2px #111;
+        }
+
+        /* ================= DEVICE: PIXEL 7 ================= */
+        .device-pixel7 {
+            width: 412px;
+            height: 860px;
+            border-radius: 35px;
+        }
+        .device-pixel7 .phone-screen { border-radius: 20px; }
+        .device-pixel7 .sensor {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #000;
+            border-radius: 50%;
+            z-index: 100;
+        }
+
+        /* ================= DEVICE: iPAD MINI ================= */
+        .device-ipad {
+            width: 768px;
+            height: 1024px;
+            border-radius: 40px;
+        }
+        .device-ipad .phone-screen { border-radius: 25px; }
+        .device-ipad .sensor {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: #000;
+            border-radius: 50%;
+            z-index: 100;
+        }
+
+        /* ================= LANDSCAPE ORIENTATION ================= */
+        .landscape-mode.device-iphone14 { width: 880px; height: 430px; }
+        .landscape-mode.device-iphone14 .sensor {
+            top: 50%; left: 10px; transform: translateY(-50%); width: 35px; height: 120px;
+        }
+
+        .landscape-mode.device-galaxys22 { width: 800px; height: 380px; }
+        .landscape-mode.device-galaxys22 .sensor {
+            top: 50%; left: 15px; transform: translateY(-50%);
+        }
+
+        .landscape-mode.device-pixel7 { width: 860px; height: 412px; }
+        .landscape-mode.device-pixel7 .sensor {
+            top: 50%; left: 12px; transform: translateY(-50%);
+        }
+
+        .landscape-mode.device-ipad { width: 1024px; height: 768px; }
+        .landscape-mode.device-ipad .sensor {
+            top: 50%; left: 10px; transform: translateY(-50%);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Voxa Server Studio</h2>
+    </div>
+
+    <div class="controls">
+        <select id="deviceSelect">
+            <option value="device-iphone14" data-width="430" data-height="880">iPhone 14 Pro Max</option>
+            <option value="device-galaxys22" data-width="380" data-height="800">Samsung Galaxy S22</option>
+            <option value="device-pixel7" data-width="412" data-height="860">Google Pixel 7</option>
+            <option value="device-ipad" data-width="768" data-height="1024">iPad Mini</option>
+        </select>
+        <button id="rotateBtn">Rotate Phone</button>
+        <button id="refreshBtn">Refresh App</button>
+    </div>
+
+    <div class="workspace" id="workspace">
+        <div class="scaler" id="scaler">
+            <!-- Default Class: device-iphone14 -->
+            <div class="phone-mockup device-iphone14" id="phoneFrame">
+                <div class="sensor" id="sensor"></div>
+                <div class="phone-screen">
+                    <iframe src="index.html" id="appFrame"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const deviceSelect = document.getElementById('deviceSelect');
+        const rotateBtn = document.getElementById('rotateBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const phoneFrame = document.getElementById('phoneFrame');
+        const appFrame = document.getElementById('appFrame');
+        const scaler = document.getElementById('scaler');
+
+        let isLandscape = false;
+
+        function updateDevice() {
+            // Remove old device classes
+            phoneFrame.className = 'phone-mockup';
+            if (isLandscape) phoneFrame.classList.add('landscape-mode');
+            
+            // Add new device class
+            const newDevice = deviceSelect.value;
+            phoneFrame.classList.add(newDevice);
+
+            scaleToFit();
+        }
+
+        function scaleToFit() {
+            const availableHeight = window.innerHeight - 150;
+            const availableWidth = window.innerWidth - 40;
+            
+            const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
+            let w = parseInt(selectedOption.getAttribute('data-width'));
+            let h = parseInt(selectedOption.getAttribute('data-height'));
+
+            const frameWidth = isLandscape ? h : w;
+            const frameHeight = isLandscape ? w : h;
+
+            const scaleY = availableHeight / frameHeight;
+            const scaleX = availableWidth / frameWidth;
+            
+            let scale = Math.min(scaleX, scaleY);
+            if (scale > 1) scale = 1;
+
+            scaler.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', scaleToFit);
+        deviceSelect.addEventListener('change', updateDevice);
+        
+        rotateBtn.addEventListener('click', () => {
+            isLandscape = !isLandscape;
+            updateDevice();
+        });
+
+        refreshBtn.addEventListener('click', () => {
+            appFrame.src = appFrame.contentWindow.location.href;
+        });
+
+        // Initialize
+        setTimeout(scaleToFit, 100);
+    </script>
+</body>
+</html>

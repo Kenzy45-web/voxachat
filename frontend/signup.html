@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voxa Server | Create Account</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="auth-container">
+        <div class="logo-container">
+            <div class="logo-text">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px; color: var(--primary-color);">
+                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                    <path d="M6 12h4"></path>
+                    <path d="M8 10v4"></path>
+                    <circle cx="15" cy="13" r="1"></circle>
+                    <circle cx="18" cy="11" r="1"></circle>
+                </svg>
+                Voxa Server
+            </div>
+            <div class="subtitle">Operator Registration</div>
+        </div>
+
+        <form id="signupForm">
+            <div class="input-group">
+                <input type="text" id="username" required placeholder=" ">
+                <label for="username">Operator Callsign (Username)</label>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="email" required placeholder=" ">
+                <label for="email">Network ID (Email)</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="password" required placeholder=" ">
+                <label for="password">Password (Create Access Code)</label>
+                <span class="password-toggle" onclick="togglePassword('password', this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="signupBtn">
+                REQUEST CLEARANCE
+            </button>
+        </form>
+
+        <form id="otpForm" style="display: none; margin-top: 20px;">
+            <div class="input-group">
+                <input type="text" id="otp" required placeholder=" " maxlength="6">
+                <label for="otp">Enter Verification Code</label>
+            </div>
+            <button type="submit" class="btn btn-primary" id="verifyBtn">
+                VERIFY ACCOUNT
+            </button>
+        </form>
+        
+        <div class="footer-links">
+            <p>Already an operator? <a href="login.html">Initialize Connection</a></p>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

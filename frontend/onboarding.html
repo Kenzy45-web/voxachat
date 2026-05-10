@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voxa Server | Initialization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .onboarding-container {
+            width: 90%;
+            max-width: 420px;
+            padding: 30px;
+            background-color: var(--surface-color);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), var(--shadow-glow);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #111;
+            border: 3px solid var(--primary-color);
+            margin: 0 auto 20px;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            color: var(--text-secondary);
+            font-size: 40px;
+        }
+
+        .avatar-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+            background: #111;
+        }
+
+        .avatar-option:hover, .avatar-option.selected {
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+        }
+
+        .avatar-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .custom-upload {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .custom-upload:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="onboarding-container">
+        <div class="logo-text" style="font-size: 24px; margin-bottom: 5px;">Operator Profile</div>
+        <div class="subtitle" style="margin-bottom: 30px;">Select your visual identifier</div>
+
+        <div class="avatar-preview" id="mainAvatarPreview">
+            <span class="avatar-placeholder">?</span>
+        </div>
+
+        <div class="avatar-options">
+            <!-- Preset Avatars using DiceBear (highly reliable SVG avatars) -->
+            <div class="avatar-option" onclick="selectAvatar('https://api.dicebear.com/7.x/bottts/svg?seed=Spiderman')">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Spiderman" alt="Bot 1">
+            </div>
+            <div class="avatar-option" onclick="selectAvatar('https://api.dicebear.com/7.x/bottts/svg?seed=Vampire')">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Vampire" alt="Bot 2">
+            </div>
+            <div class="avatar-option" onclick="selectAvatar('https://api.dicebear.com/7.x/bottts/svg?seed=Ninja')">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Ninja" alt="Bot 3">
+            </div>
+            <div class="avatar-option" onclick="selectAvatar('https://api.dicebear.com/7.x/bottts/svg?seed=Assassin')">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Assassin" alt="Bot 4">
+            </div>
+            
+            <label class="custom-upload" id="customUploadBtn">
+                <span style="font-size: 24px;">+</span>
+                <input type="file" id="imageUpload" accept="image/*">
+            </label>
+        </div>
+
+        <button class="btn btn-primary" id="completeOnboardingBtn" disabled>
+            FINALIZE UPLINK
+        </button>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

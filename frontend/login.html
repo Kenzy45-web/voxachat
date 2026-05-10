@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voxa Open Server | Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google OAuth Script -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="auth-container">
+        <div class="logo-container">
+            <div class="logo-text">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px; color: var(--primary-color);">
+                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                    <path d="M6 12h4"></path>
+                    <path d="M8 10v4"></path>
+                    <circle cx="15" cy="13" r="1"></circle>
+                    <circle cx="18" cy="11" r="1"></circle>
+                </svg>
+                Voxa Server
+            </div>
+            <div class="subtitle">Global Gaming Network Protocol</div>
+        </div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="email" id="email" required placeholder=" ">
+                <label for="email">Network ID (Email)</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="password" required placeholder=" ">
+                <label for="password">Access Code (Password)</label>
+                <span class="password-toggle" onclick="togglePassword('password', this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                INITIALIZE CONNECTION
+            </button>
+        </form>
+
+        <div class="divider">OR</div>
+
+        <!-- Google Login Button -->
+        <button type="button" class="btn btn-google" id="googleLoginBtn">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">
+            CONNECT VIA GOOGLE
+        </button>
+        
+        <!-- Google Completion Form (Hidden by default) -->
+        <form id="googleCompleteForm" style="display: none; margin-top: 20px;">
+            <div class="subtitle" style="margin-bottom: 20px; color: #00e5ff;">Google link successful. Choose an Operator Callsign and Access Code to complete registration.</div>
+            
+            <div class="input-group">
+                <input type="text" id="googleUsername" required placeholder=" ">
+                <label for="googleUsername">Operator Callsign (Username)</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="googlePassword" required placeholder=" ">
+                <label for="googlePassword">Create Access Code</label>
+                <span class="password-toggle" onclick="togglePassword('googlePassword', this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="googleCompleteBtn">
+                COMPLETE REGISTRATION
+            </button>
+        </form>
+
+        <div class="footer-links" id="footerLinks">
+            <p>New to Voxa? <a href="signup.html">Create Account</a></p>
+            <p style="margin-top: 10px;"><a href="forgot.html">Recover Password</a></p>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

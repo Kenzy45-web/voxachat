@@ -1,0 +1,248 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { pool } = require('./database');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: false,
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
+
+// Ensure the database has the avatar_url column
+pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;')
+    .then(() => console.log('Database schema verified (avatar_url).'))
+    .catch(err => console.error('Error verifying database schema:', err));
+
+// Ensure the waitlist table exists
+pool.query('CREATE TABLE IF NOT EXISTS waitlist (id SERIAL PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);')
+    .then(() => console.log('Database schema verified (waitlist).'))
+    .catch(err => console.error('Error verifying waitlist schema:', err));
+
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+app.post('/api/auth/register', async (req, res) => {
+    const { username, email, password } = req.body;
+    try {
+        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1 OR username = $2', [email, username]);
+        if (userCheck.rows.length > 0) {
+            return res.status(400).json({ success: false, error: 'User already exists' });
+        }
+
+        const password_hash = await bcrypt.hash(password, 10);
+        await pool.query(
+            'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)',
+            [username, email, password_hash]
+        );
+
+        // Generate OTP
+        const otp = generateOTP();
+        const expiresAt = new Date(Date.now() + 10 * 60000); // 10 mins
+        await pool.query(
+            'INSERT INTO otps (email, otp, expires_at) VALUES ($1, $2, $3)',
+            [email, otp, expiresAt]
+        );
+
+        // Send Email
+        await transporter.sendMail({
+            from: `"Voxa Server" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Voxa Server - Verification Code',
+            html: `
+            <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
+                <h1 style="color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">
+                    <span style="color: #00e5ff;">Voxa</span> Server
+                </h1>
+                <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Global Gaming Network Protocol</p>
+                
+                <div style="margin: 40px 0; padding: 20px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px;">
+                    <p style="margin: 0; color: #a0a5b5; font-size: 14px; text-transform: uppercase;">Operator Clearance Code</p>
+                    <h2 style="color: #00e5ff; font-size: 36px; letter-spacing: 5px; margin: 10px 0;">${otp}</h2>
+                </div>
+                
+                <p style="color: #a0a5b5; font-size: 12px;">This code will expire in 10 minutes.<br>If you did not request this, please ignore this transmission.</p>
+            </div>`
+        });
+
+        res.json({ success: true, message: 'Operator clearance requested. Check your email for OTP.' });
+    } catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+app.post('/api/auth/verify', async (req, res) => {
+    const { email, otp } = req.body;
+    try {
+        const result = await pool.query('SELECT * FROM otps WHERE email = $1 AND otp = $2 AND expires_at > NOW()', [email, otp]);
+        if (result.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid or expired OTP' });
+        }
+        await pool.query('UPDATE users SET is_verified = TRUE WHERE email = $1', [email]);
+        await pool.query('DELETE FROM otps WHERE email = $1', [email]);
+        
+        res.json({ success: true, message: 'Verification successful.' });
+    } catch (error) {
+        console.error('Verify error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+app.post('/api/auth/onboarding', async (req, res) => {
+    const { email, avatarUrl } = req.body;
+    try {
+        await pool.query('UPDATE users SET avatar_url = $1 WHERE email = $2', [avatarUrl, email]);
+        
+        // Send Welcome Email
+        await transporter.sendMail({
+            from: `"Voxa Server" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Welcome to Voxa Server',
+            html: `
+            <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
+                <h1 style="color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">
+                    <span style="color: #00e5ff;">Welcome to</span> Voxa Server
+                </h1>
+                <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Global Gaming Network Protocol</p>
+                
+                <div style="margin: 40px 0; padding: 20px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px;">
+                    <p style="margin: 0; color: #ffffff; font-size: 16px; line-height: 1.5;">Operator Profile has been <strong>configured</strong>. Your connection is now fully established.</p>
+                </div>
+                
+                <p style="color: #a0a5b5; font-size: 12px;">You can now access the global network dashboard.<br>Welcome aboard, Operator.</p>
+            </div>`
+        });
+
+        res.json({ success: true, message: 'Onboarding complete.' });
+    } catch (error) {
+        console.error('Onboarding Error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userResult.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid credentials' });
+        }
+        
+        const user = userResult.rows[0];
+        if (!user.is_verified) {
+            return res.status(403).json({ success: false, error: 'Account not verified' });
+        }
+
+        const isValid = await bcrypt.compare(password, user.password_hash);
+        if (!isValid) {
+            return res.status(400).json({ success: false, error: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.json({ success: true, token, username: user.username });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+app.post('/api/auth/google', async (req, res) => {
+    const { email, google_id } = req.body;
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        
+        if (userResult.rows.length > 0) {
+            const user = userResult.rows[0];
+            // If they signed up normally but now use Google, update their google_id
+            if (!user.google_id) {
+                await pool.query('UPDATE users SET google_id = $1, is_verified = TRUE WHERE email = $2', [google_id, email]);
+            }
+            const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            return res.json({ success: true, token, username: user.username, requiresRegistration: false });
+        } else {
+            // New user, needs username and password
+            return res.json({ success: true, requiresRegistration: true, email, google_id });
+        }
+    } catch (error) {
+        console.error('Google Auth Error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+app.post('/api/auth/google-complete', async (req, res) => {
+    const { username, email, password, google_id } = req.body;
+    try {
+        const userCheck = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (userCheck.rows.length > 0) {
+            return res.status(400).json({ success: false, error: 'Username already taken' });
+        }
+
+        const password_hash = await bcrypt.hash(password, 10);
+        const result = await pool.query(
+            'INSERT INTO users (username, email, password_hash, google_id, is_verified) VALUES ($1, $2, $3, $4, TRUE) RETURNING id, username',
+            [username, email, password_hash, google_id]
+        );
+        
+        const user = result.rows[0];
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.json({ success: true, token, username: user.username });
+    } catch (error) {
+        console.error('Google Complete Error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+app.post('/api/waitlist', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const check = await pool.query('SELECT * FROM waitlist WHERE email = $1', [email]);
+        if (check.rows.length > 0) {
+            return res.status(400).json({ success: false, error: 'You are already in the family! We will notify you when we launch.' });
+        }
+
+        await pool.query('INSERT INTO waitlist (email) VALUES ($1)', [email]);
+
+        // Send Waitlist Confirmation Email
+        await transporter.sendMail({
+            from: `"Voxa Server" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Voxa Server: Spot Secured',
+            html: `
+            <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
+                <h1 style="color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">
+                    <span style="color: #00e5ff;">Spot Secured</span>
+                </h1>
+                <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Voxa Server Global Waitlist</p>
+                
+                <div style="margin: 40px 0; padding: 20px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px;">
+                    <p style="margin: 0; color: #ffffff; font-size: 16px; line-height: 1.5;">Your email has been registered for the global launch on <strong>August 10, 2026</strong>.</p>
+                </div>
+                
+                <p style="color: #a0a5b5; font-size: 12px;">We will contact you with Operator Clearance codes when the servers go live.</p>
+            </div>`
+        });
+
+        res.json({ success: true, message: 'Waitlist joined successfully.' });
+    } catch (error) {
+        console.error('Waitlist Error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+const PORT = process.env.PORT || 3050;
+app.listen(PORT, () => {
+    console.log(`Voxa Server Network initialized on port ${PORT}`);
+});

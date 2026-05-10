@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voxa Server | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            background-color: var(--surface-color);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), var(--shadow-glow);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .welcome-text {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .status-box {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px dashed rgba(0, 229, 255, 0.3);
+            border-radius: 12px;
+        }
+
+        .status-box p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="dashboard-container">
+        <div class="logo-container">
+            <div class="logo-text">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px; color: var(--primary-color);">
+                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                    <path d="M6 12h4"></path>
+                    <path d="M8 10v4"></path>
+                    <circle cx="15" cy="13" r="1"></circle>
+                    <circle cx="18" cy="11" r="1"></circle>
+                </svg>
+                Voxa Server
+            </div>
+            <div class="subtitle">Operator Dashboard</div>
+        </div>
+
+        <h2 class="welcome-text" id="welcomeMessage">Welcome, Operator</h2>
+        
+        <div class="status-box">
+            <p><strong>Connection Status:</strong> <span style="color: #00ff66;">SECURE</span></p>
+            <p><strong>Network Latency:</strong> 12ms</p>
+            <p>More features (Profile, Game Servers, etc.) will be deployed here soon.</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="logout()">
+            TERMINATE CONNECTION
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const username = localStorage.getItem('voxa_username');
+            if (username) {
+                document.getElementById('welcomeMessage').innerText = `Welcome, ${username}`;
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('voxa_token');
+            localStorage.removeItem('voxa_username');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
