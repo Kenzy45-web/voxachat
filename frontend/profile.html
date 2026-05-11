@@ -58,9 +58,9 @@
         .container {
             position: relative;
             z-index: 10;
-            padding: 40px 15px; /* Better for all devices */
+            padding: 40px 15px;
             width: 100%;
-            max-width: 500px; /* Snug fit */
+            max-width: 500px;
             margin: 0 auto;
         }
 
@@ -175,12 +175,7 @@
             padding: 5px;
             border-radius: 8px;
             cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
         }
-
-        .copy-btn:active { transform: scale(0.9); }
 
         .rank-text {
             color: var(--primary-color);
@@ -216,7 +211,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
-            transition: 0.2s;
         }
 
         .setting-info {
@@ -247,56 +241,16 @@
             font-size: 15px;
         }
 
-        .setting-value {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        /* Toggle Switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 46px;
-            height: 24px;
-        }
-
-        .switch input { opacity: 0; width: 0; height: 0; }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255, 255, 255, 0.1);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        /* Appearance Hub */
         .appearance-grid {
             display: flex;
+            align-items: center;
             gap: 12px;
-            margin-top: 5px;
+            margin-top: 10px;
         }
 
         .theme-circle {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
@@ -309,9 +263,103 @@
             transform: scale(1.1);
         }
 
+        .add-theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        /* Machine UI for Color Picker */
+        .color-machine {
+            display: none;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-glow);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .color-machine.active { display: block; }
+
+        .machine-header { font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .machine-controls { display: flex; gap: 10px; align-items: center; }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            background: none;
+            cursor: pointer;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 2px solid var(--border-glow); border-radius: 10px; }
+
+        .hex-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            font-family: 'Inter', monospace;
+            flex-grow: 1;
+            font-size: 14px;
+        }
+
+        .apply-machine-btn {
+            background: var(--primary-color);
+            color: #0b0d17;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .toast {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--primary-color);
+            backdrop-filter: blur(15px);
+            padding: 15px 20px;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 10px;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
         .btn-logout {
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             background: rgba(255, 51, 102, 0.05);
             border: 1px solid rgba(255, 51, 102, 0.2);
             border-radius: 20px;
@@ -323,7 +371,7 @@
             margin-bottom: 50px;
         }
 
-        /* Modal */
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -366,7 +414,6 @@
         }
 
         .char-option img { width: 100%; height: 100%; border-radius: 10px; }
-        .char-option:hover { border-color: var(--primary-color); }
 
         .upload-btn {
             background: rgba(0, 229, 255, 0.05);
@@ -401,7 +448,7 @@
             </div>
             <div class="username-row">
                 <h2 class="username" id="userName">...</h2>
-                <div class="copy-btn" id="copyUsername" title="Copy Callsign">
+                <div class="copy-btn" id="copyUsername">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </div>
             </div>
@@ -409,19 +456,30 @@
         </div>
 
         <div class="settings-group">
-            <div class="group-label">Appearance Hub</div>
-            <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+            <div class="group-label">Appearance Protocol</div>
+            <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
                 <div class="setting-info">
                     <div class="setting-icon">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                     </div>
-                    <div class="setting-label">Theme Color</div>
+                    <div class="setting-label">Interface Theme</div>
                 </div>
                 <div class="appearance-grid">
                     <div class="theme-circle" style="background: #00e5ff;" onclick="setTheme('#00e5ff', '#7000ff')"></div>
                     <div class="theme-circle" style="background: #ff3366;" onclick="setTheme('#ff3366', '#ff00ff')"></div>
                     <div class="theme-circle" style="background: #00ff88;" onclick="setTheme('#00ff88', '#0099ff')"></div>
                     <div class="theme-circle" style="background: #7000ff;" onclick="setTheme('#7000ff', '#00e5ff')"></div>
+                    <div class="add-theme-btn" id="openMachineBtn">+</div>
+                </div>
+
+                <!-- Custom Color Machine -->
+                <div class="color-machine" id="colorMachine">
+                    <div class="machine-header">Appearance Machine v1.0</div>
+                    <div class="machine-controls">
+                        <input type="color" id="machinePicker" value="#00e5ff">
+                        <input type="text" id="machineHex" class="hex-input" placeholder="#00E5FF">
+                        <button class="apply-machine-btn" id="applyMachineBtn">APPLY</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -435,13 +493,10 @@
                     </div>
                     <div class="setting-details">
                         <div class="setting-label">Notifications</div>
-                        <div class="setting-value">Enable bot audio alerts</div>
+                        <div class="setting-value">Bot audio alerts enabled</div>
                     </div>
                 </div>
-                <label class="switch">
-                    <input type="checkbox" id="notifToggle" checked>
-                    <span class="slider"></span>
-                </label>
+                <div class="add-theme-btn" style="background: var(--primary-color);">✓</div>
             </div>
         </div>
 
@@ -450,7 +505,7 @@
             <div class="setting-item">
                 <div class="setting-info">
                     <div class="setting-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     </div>
                     <div class="setting-details">
                         <div class="setting-label">Email</div>
@@ -460,8 +515,10 @@
             </div>
         </div>
 
-        <button class="btn-logout" id="logoutBtn">TERMINATE SESSION</button>
+        <button class="btn-logout" id="logoutBtn">LOGOUT</button>
     </div>
+
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- Modal -->
     <div class="modal" id="avatarModal">
@@ -478,7 +535,6 @@
                 <div class="char-option" onclick="updateAvatar('https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Raven&backgroundColor=0b0d17')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Raven&backgroundColor=0b0d17"></div>
             </div>
             <div class="upload-btn" id="galleryBtn">UPLOAD FROM GALLERY</div>
-            <input type="file" id="fileInput" hidden accept="image/*">
             <div style="text-align: center; margin-top: 15px; color: var(--text-secondary); cursor: pointer;" onclick="document.getElementById('avatarModal').classList.remove('active')">CANCEL</div>
         </div>
     </div>
@@ -486,6 +542,16 @@
     <script>
         const userData = JSON.parse(localStorage.getItem('voxa_user'));
         const botSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> ${msg}`;
+            container.appendChild(toast);
+            botSound.play();
+            setTimeout(() => toast.remove(), 3000);
+        }
 
         function refreshUI() {
             if (!userData) { window.location.href = 'login.html'; return; }
@@ -505,7 +571,7 @@
         // Copy Username
         document.getElementById('copyUsername').onclick = () => {
             navigator.clipboard.writeText(userData.username);
-            alert('Callsign Copied to Clipboard');
+            showToast('Callsign Copied');
         };
 
         // Modal
@@ -516,44 +582,35 @@
             localStorage.setItem('voxa_user', JSON.stringify(userData));
             document.getElementById('avatarModal').classList.remove('active');
             refreshUI();
+            showToast('Avatar Protocol Updated');
         }
 
-        document.getElementById('galleryBtn').onclick = () => document.getElementById('fileInput').click();
-        document.getElementById('fileInput').onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => updateAvatar(event.target.result);
-                reader.readAsDataURL(file);
-            }
+        // Appearance Machine
+        const machineBtn = document.getElementById('openMachineBtn');
+        const machine = document.getElementById('colorMachine');
+        machineBtn.onclick = () => machine.classList.toggle('active');
+
+        const machinePicker = document.getElementById('machinePicker');
+        const machineHex = document.getElementById('machineHex');
+        machinePicker.oninput = (e) => machineHex.value = e.target.value.toUpperCase();
+        
+        document.getElementById('applyMachineBtn').onclick = () => {
+            const color = machineHex.value || machinePicker.value;
+            setTheme(color, color);
+            showToast('Custom Theme Applied');
         };
 
-        // Theme
         function setTheme(primary, secondary) {
             document.documentElement.style.setProperty('--primary-color', primary);
             document.documentElement.style.setProperty('--secondary-color', secondary);
             localStorage.setItem('voxa_theme', JSON.stringify({primary, secondary}));
             
             const circles = document.querySelectorAll('.theme-circle');
-            circles.forEach(c => {
-                c.classList.remove('active');
-                if (c.style.backgroundColor === hexToRgb(primary)) c.classList.add('active');
-            });
-        }
-
-        function hexToRgb(hex) {
-            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : null;
+            circles.forEach(c => c.classList.remove('active'));
         }
 
         const savedTheme = JSON.parse(localStorage.getItem('voxa_theme'));
         if (savedTheme) setTheme(savedTheme.primary, savedTheme.secondary);
-
-        // Notifications
-        document.getElementById('notifToggle').onchange = (e) => {
-            if (e.target.checked) botSound.play();
-            localStorage.setItem('voxa_notifs', e.target.checked);
-        };
 
         document.getElementById('logoutBtn').onclick = () => {
             localStorage.removeItem('voxa_token');
