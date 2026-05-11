@@ -94,6 +94,13 @@
             height: 100%;
             border: none;
             display: block;
+            /* Hide scrollbar in iframe */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        iframe::-webkit-scrollbar {
+            display: none;
         }
 
         /* Hardware Buttons (Base) */
