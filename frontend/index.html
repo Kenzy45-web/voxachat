@@ -3,505 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voxa | Find Your Squad</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>Voxa | Your Ultimate Gaming Squad Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        html {
-            scroll-behavior: smooth;
+        :root {
+            --primary: #00e5ff;
+            --primary-glow: rgba(0, 229, 255, 0.4);
+            --bg: #0b0d17;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-dim: #a0a5b5;
+            --accent-purple: #7000ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', 'Inter', sans-serif;
         }
 
         body {
-            background-color: #0b0d17;
-            background-image: url('bg-logo.png');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: white;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: var(--bg);
+            color: var(--text-main);
             overflow-x: hidden;
-            position: relative;
-            display: block;
+            line-height: 1.6;
         }
 
-        /* Faded Overlay for better readability */
-        .overlay {
+        /* Ambient Background */
+        .ambient-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(11, 13, 23, 0.98) 0%, rgba(11, 13, 23, 0.85) 100%);
-            backdrop-filter: blur(8px);
-            z-index: 1;
+            z-index: -1;
+            background: radial-gradient(circle at 10% 10%, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 90%, rgba(112, 0, 255, 0.05) 0%, transparent 40%);
         }
 
-        /* Navigation Bar */
+        /* Navigation */
         nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 100;
-            background: rgba(11, 13, 23, 0.85);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(0, 229, 255, 0.1);
-            box-sizing: border-box;
-        }
-
-        .nav-logo {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--primary-color);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
-        }
-
-        .hamburger {
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 101;
-        }
-
-        .hamburger span {
-            display: block;
-            width: 30px;
-            height: 3px;
-            background-color: var(--primary-color);
-            border-radius: 3px;
-            transition: 0.3s;
-        }
-
-        .hamburger.active span:nth-child(1) {
-            transform: translateY(9px) rotate(45deg);
-        }
-
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.active span:nth-child(3) {
-            transform: translateY(-9px) rotate(-45deg);
-        }
-
-        .nav-menu {
+            padding: 30px 8%;
             position: fixed;
+            width: 100%;
             top: 0;
-            right: -100%;
-            width: 300px;
-            height: 100vh;
-            background: rgba(11, 13, 23, 0.98);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid rgba(0, 229, 255, 0.2);
-            display: flex;
-            flex-direction: column;
-            padding-top: 100px;
-            transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 99;
-        }
-
-        .nav-menu.active {
-            right: 0;
-        }
-
-        .nav-menu a {
-            padding: 20px 40px;
-            color: white;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: 500;
-            transition: 0.3s;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(11, 13, 23, 0.7);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .nav-menu a:hover, .nav-menu a.highlight {
-            color: var(--primary-color);
-            background: rgba(0, 229, 255, 0.05);
-            padding-left: 50px;
-        }
-        
-        .nav-menu a.highlight {
+        .logo {
+            font-size: 24px;
             font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background: rgba(0, 229, 255, 0.1);
+            letter-spacing: 2px;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* Sections */
-        .section {
-            position: relative;
-            z-index: 10;
-            min-height: 100vh;
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            font-size: 15px;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-auth {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .btn-outline {
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 120px 20px 60px;
-        }
-
-        .section-content {
-            max-width: 1000px;
-            width: 100%;
-            animation: fadeIn 1s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            color: var(--primary-color);
-            font-size: 56px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
-            font-weight: 800;
-        }
-
-        h2 {
-            font-size: 40px;
-            margin-bottom: 30px;
-            color: white;
-            letter-spacing: 1px;
-            font-weight: 800;
-        }
-        
-        h2 span {
-            color: var(--primary-color);
-        }
-
-        p.description {
-            color: var(--text-secondary);
-            font-size: 20px;
-            line-height: 1.8;
-            margin-bottom: 40px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .btn-large {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 18px 40px;
-            border-radius: 12px;
-            background: var(--primary-color);
-            color: var(--bg-color);
-            font-weight: 800;
-            font-size: 18px;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
-            border: none;
-            cursor: pointer;
-            gap: 10px;
-        }
-
-        .btn-large:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 229, 255, 0.6);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            box-shadow: none;
-        }
-
-        .btn-outline:hover {
-            background: rgba(0, 229, 255, 0.1);
-            box-shadow: 0 4px 20px rgba(0, 229, 255, 0.2);
-        }
-
-        /* Feature Cards */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: left;
-            transition: all 0.4s ease;
+            padding: 0 5%;
+            background: url('bg-logo.png') no-repeat center center;
+            background-size: 40%;
             position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
         }
 
-        .feature-card::before {
+        .hero::after {
             content: '';
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 4px;
-            background: var(--primary-color);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s ease;
+            height: 30%;
+            background: linear-gradient(to top, var(--bg), transparent);
         }
 
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(0, 229, 255, 0.3);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 229, 255, 0.1);
+        .hero h1 {
+            font-size: clamp(40px, 8vw, 90px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: clamp(16px, 2vw, 20px);
+            color: var(--text-dim);
+            max-width: 700px;
+            margin-bottom: 40px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .btn-primary {
+            padding: 18px 40px;
+            background: var(--primary);
+            color: #0b0d17;
+            text-decoration: none;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 16px;
+            box-shadow: 0 0 20px var(--primary-glow);
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px var(--primary-glow);
+        }
+
+        /* Bento Grid Section */
+        .features {
+            padding: 100px 8%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 300px);
+            gap: 20px;
+        }
+
+        .bento-item {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .bento-item:hover {
+            border-color: var(--primary);
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .feature-card:hover::before {
-            transform: scaleX(1);
+        .bento-item.large {
+            grid-column: span 2;
         }
 
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 229, 255, 0.1);
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 25px;
-            color: var(--primary-color);
-            border: 1px solid rgba(0, 229, 255, 0.2);
+        .bento-item.tall {
+            grid-row: span 2;
         }
 
-        .feature-card h3 {
+        .bento-item h3 {
             font-size: 24px;
-            margin-bottom: 15px;
-            color: white;
+            margin-bottom: 10px;
+            z-index: 2;
         }
 
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 16px;
-            line-height: 1.7;
+        .bento-item p {
+            color: var(--text-dim);
+            font-size: 15px;
+            z-index: 2;
         }
 
-        /* Game specific badges */
-        .game-badges {
+        .bento-item .icon-bg {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 120px;
+            opacity: 0.05;
+            color: var(--primary);
+            transform: rotate(-15deg);
+        }
+
+        /* Footer */
+        footer {
+            padding: 100px 8% 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 100px;
+        }
+
+        .footer-content {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 60px;
+        }
+
+        .footer-logo {
+            max-width: 300px;
+        }
+
+        .footer-logo p {
+            color: var(--text-dim);
             margin-top: 20px;
         }
 
-        .badge {
-            background: rgba(0, 229, 255, 0.1);
-            color: var(--primary-color);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            border: 1px solid rgba(0, 229, 255, 0.3);
+        .footer-links {
+            display: flex;
+            gap: 100px;
         }
 
-        /* Action Section */
-        .cta-section {
-            background: linear-gradient(0deg, rgba(11, 13, 23, 1) 0%, rgba(11, 13, 23, 0.4) 100%);
-            border-top: 1px solid rgba(0, 229, 255, 0.1);
-            padding: 100px 20px;
+        .footer-col h4 {
+            margin-bottom: 25px;
+            font-size: 16px;
         }
 
-        .cta-box {
-            background: rgba(0, 229, 255, 0.05);
-            border: 1px dashed rgba(0, 229, 255, 0.3);
-            border-radius: 20px;
-            padding: 60px 40px;
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-            overflow: hidden;
+        .footer-col a {
+            display: block;
+            color: var(--text-dim);
+            text-decoration: none;
+            margin-bottom: 15px;
+            font-size: 14px;
+            transition: 0.3s;
         }
-        
-        .glow-circle {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: var(--primary-color);
-            filter: blur(100px);
-            opacity: 0.1;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
+
+        .footer-col a:hover {
+            color: var(--primary);
+        }
+
+        .copyright {
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 13px;
         }
 
         @media (max-width: 1024px) {
-            h1 { font-size: 48px; }
-            h2 { font-size: 36px; }
+            .bento-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: auto;
+            }
+            .bento-item.large { grid-column: span 2; }
+            .bento-item.tall { grid-row: auto; height: 300px; }
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 36px; }
-            h2 { font-size: 28px; }
-            p.description { font-size: 16px; }
-            nav { padding: 15px 20px; }
-            .section { padding: 100px 20px 40px; }
-            .feature-grid { grid-template-columns: 1fr; }
-            .btn-large { padding: 15px 30px; font-size: 16px; width: 100%; margin-bottom: 15px; }
-            .btn-outline { margin-right: 0 !important; }
-            .nav-logo { font-size: 20px; }
-        }
-
-        @media (max-width: 480px) {
-            h1 { font-size: 28px; letter-spacing: 1px; }
-            h2 { font-size: 24px; }
-            p.description { font-size: 14px; margin-bottom: 25px; }
-            .section { padding: 80px 15px 30px; }
-            .feature-card { padding: 25px 15px; }
-            .feature-card h3 { font-size: 18px; }
-            .cta-box { padding: 30px 15px; }
+            .nav-links { display: none; }
+            .hero h1 { font-size: 50px; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-item.large { grid-column: span 1; }
+            .footer-content { flex-direction: column; gap: 50px; }
+            .footer-links { gap: 40px; flex-wrap: wrap; }
         }
     </style>
 </head>
 <body>
-    <div class="overlay"></div>
-    
+    <div class="ambient-bg"></div>
+
     <nav>
-        <div class="nav-logo">Voxa</div>
-        <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
+        <a href="index.html" class="logo">VOXA</a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#community">Community</a>
+            <a href="#squads">Squads</a>
         </div>
-        <div class="nav-menu" id="navMenu">
-            <a href="#hero" class="nav-link">Home</a>
-            <a href="#features" class="nav-link">Features</a>
-            <a href="#games" class="nav-link">Games & Comm</a>
-            <a href="join.html" class="nav-link highlight">Join Waitlist</a>
+        <div class="nav-auth">
+            <a href="login.html" class="btn-outline">Log In</a>
+            <a href="join.html" class="btn-primary" style="padding: 10px 25px; box-shadow: none;">Join Waitlist</a>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
-    <section class="section" id="hero">
-        <div class="section-content">
-            <h1>Find Your Squad on Voxa</h1>
-            <p class="description">
-                The ultimate hangout for gamers. Meet new friends from around the world, team up in your favorite games, and chat in real-time. Your next great squad is just a click away.
-            </p>
-            <div style="margin-top: 40px;">
-                <a href="#features" class="btn-large btn-outline" style="margin-right: 15px;">Explore Features</a>
-                <a href="join.html" class="btn-large">
-                    Secure Access
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
+    <section class="hero">
+        <h1>Connect. Play.<br><span style="color: var(--primary);">Dominate.</span></h1>
+        <p>The global hub for mobile legends, squad leaders, and the next generation of gaming communities.</p>
+        <div class="cta-group">
+            <a href="join.html" class="btn-primary">Secure Early Access</a>
+            <a href="signup.html" class="btn-outline" style="padding: 18px 40px;">Create Operator Account</a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Built for Operators</h2>
+            <p style="color: var(--text-dim);">Everything you need to build the ultimate gaming squad.</p>
+        </div>
+        <div class="bento-grid">
+            <div class="bento-item large">
+                <div class="icon-bg">🛡️</div>
+                <h3>Global Clusters</h3>
+                <p>Join high-performance servers dedicated to FF, COD, and PUBG. Low latency, high interaction.</p>
+            </div>
+            <div class="bento-item tall">
+                <div class="icon-bg">🎮</div>
+                <h3>Squad Management</h3>
+                <p>Build your crew, assign roles, and track your global ranking across the network.</p>
+            </div>
+            <div class="bento-item">
+                <div class="icon-bg">💬</div>
+                <h3>Instant Sync</h3>
+                <p>Real-time communication across all gaming clusters with zero lag.</p>
+            </div>
+            <div class="bento-item large">
+                <div class="icon-bg">🏆</div>
+                <h3>Pro Identity</h3>
+                <p>Your Operator ID follows you everywhere. Build your stats and become a legend.</p>
             </div>
         </div>
     </section>
 
-    <!-- FEATURES SECTION: GLOBAL CHAT -->
-    <section class="section" id="features" style="background: rgba(11, 13, 23, 0.4); border-top: 1px solid rgba(0, 229, 255, 0.1);">
-        <div class="section-content">
-            <h2>Connect <span>&amp;</span> Make Friends</h2>
-            <p class="description">
-                Break down borders and meet people who love the same games as you. Voxa connects players globally in a unified, friendly social environment.
-            </p>
-            
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    </div>
-                    <h3>Global Lobbies</h3>
-                    <p>Meet players from different countries in one easy-to-use group. Our community tools make it simple to find friends who speak your language or share your playstyle.</p>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="logo">VOXA</div>
+                <p>Forging the future of global gaming communities, one squad at a time.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4>Network</h4>
+                    <a href="signup.html">Create Account</a>
+                    <a href="login.html">Login</a>
+                    <a href="join.html">Waitlist</a>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    </div>
-                    <h3>Squad Building</h3>
-                    <p>Create or join massive gaming communities. Whether you're looking for a casual chat or a serious tournament team, you'll find your people on Voxa.</p>
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <a href="#">Discord</a>
+                    <a href="#">Twitter</a>
+                    <a href="#">Instagram</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Server Status</a>
+                    <a href="#">Contact</a>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- INTEGRATED GAMING SECTION -->
-    <section class="section" id="games">
-        <div class="section-content">
-            <h2>Play Together <span>Everywhere</span></h2>
-            <p class="description">
-                It's not just about talking; it's about the shared experience. Team up with your new friends and jump into games directly from your Voxa dashboard.
-            </p>
-
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    </div>
-                    <h3>Online Multiplayer Support</h3>
-                    <p>Meet new people to play with, exchange UIDs, and team up in custom rooms. Voxa makes it easy to build your squad and jump into the action together.</p>
-                    <div class="game-badges">
-                        <span class="badge">Free Fire</span>
-                        <span class="badge">Call of Duty</span>
-                        <span class="badge">PUBG</span>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M12 12h.01"></path><path d="M17 12h.01"></path><path d="M7 12h.01"></path></svg>
-                    </div>
-                    <h3>Built-in / Offline Games</h3>
-                    <p>Don't want to load a heavy title? Play our custom-built, lightweight games directly inside the Voxa interface while you chat.</p>
-                    <div class="game-badges">
-                        <span class="badge">Ludo</span>
-                        <span class="badge">Chess</span>
-                        <span class="badge">More Coming Soon</span>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                    </div>
-                    <h3>Crystal Clear Voice</h3>
-                    <p>High-quality, easy-to-use voice chat. Coordinate with your team or just hang out and laugh together without any lag or complicated setup.</p>
-                    <div class="game-badges">
-                        <span class="badge">Spatial Audio</span>
-                        <span class="badge">Noise Suppression</span>
-                    </div>
-                </div>
-            </div>
+        <div class="copyright">
+            &copy; 2026 Voxa Global Network. All rights reserved. Operator clearance required for access.
         </div>
-    </section>
-
-    <!-- CALL TO ACTION -->
-    <section class="section cta-section">
-        <div class="section-content">
-            <div class="cta-box">
-                <div class="glow-circle"></div>
-                <h2>Join the Voxa Family</h2>
-                <p class="description" style="font-size: 16px; margin-bottom: 30px;">
-                    Our community is spooling up! We are accepting a limited number of early members for our closed beta. Grab your spot and start making friends today.
-                </p>
-                <a href="join.html" class="btn-large">Join the Global Family</a>
-            </div>
-        </div>
-    </section>
-
-    <script src="waitlist.js"></script>
+    </footer>
 </body>
 </html>
