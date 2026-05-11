@@ -2,91 +2,357 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Voxa Server | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxa | Control Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
     <style>
-        .dashboard-container {
-            width: 100%;
-            max-width: 600px;
-            padding: 40px;
-            background-color: var(--surface-color);
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), var(--shadow-glow);
-            position: relative;
-            z-index: 10;
-            text-align: center;
+        :root {
+            --primary-color: #00e5ff;
+            --bg-color: #0b0d17;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(0, 229, 255, 0.2);
+            --text-secondary: #a0a5b5;
         }
 
-        .welcome-text {
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: url('bg-logo.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Faded Overlay for better readability */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(11, 13, 23, 0.95) 0%, rgba(11, 13, 23, 0.8) 100%);
+            backdrop-filter: blur(5px);
+            z-index: 1;
+        }
+
+        .dashboard-container {
+            position: relative;
+            z-index: 10;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .voxa-logo {
+            font-size: 32px;
+            font-weight: 800;
             color: var(--primary-color);
-            font-size: 24px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
             margin-bottom: 10px;
         }
 
-        .status-box {
-            margin: 30px 0;
-            padding: 20px;
-            background: rgba(0, 229, 255, 0.05);
-            border: 1px dashed rgba(0, 229, 255, 0.3);
-            border-radius: 12px;
+        .status-badge {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--primary-color);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: 1px solid var(--border-glow);
         }
 
-        .status-box p {
+        /* GRID LAYOUT */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 40px 30px;
+            backdrop-filter: blur(15px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 229, 255, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 229, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
             color: var(--text-secondary);
+        }
+
+        .card-icon {
+            color: var(--primary-color);
+        }
+
+        /* SECTION 1: OPEN SERVER (ONLINE) */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #00ff88;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00ff88;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+        }
+
+        .status-text {
+            font-size: 28px;
+            font-weight: 800;
+            color: #00ff88;
+            text-transform: uppercase;
+        }
+
+        /* SECTION 2: OFFLINE SERVERS (GAMES) */
+        .games-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 0 0;
+        }
+
+        .game-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: 0.3s;
+        }
+
+        .game-item:hover {
+            background: rgba(0, 229, 255, 0.05);
+            border-color: var(--border-glow);
+        }
+
+        .game-status {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #ff4d4d;
+            font-weight: 800;
+        }
+
+        /* SECTION 3: PROFILES */
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #00e5ff, #0044ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-info h3 {
+            margin: 0;
+            font-size: 18px;
+            color: white;
+        }
+
+        .profile-info p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .rank-badge {
+            margin-top: 15px;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--primary-color);
+            border: 1px solid var(--border-glow);
+        }
+
+        /* FOOTER NAVIGATION */
+        .bottom-nav {
+            margin-top: 60px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 25px;
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
             font-size: 14px;
-            margin: 5px 0;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 40px; }
         }
     </style>
 </head>
 <body>
-    <div class="cyber-grid"></div>
-
+    <div class="overlay"></div>
+    
     <div class="dashboard-container">
-        <div class="logo-container">
-            <div class="logo-text">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px; color: var(--primary-color);">
-                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
-                    <path d="M6 12h4"></path>
-                    <path d="M8 10v4"></path>
-                    <circle cx="15" cy="13" r="1"></circle>
-                    <circle cx="18" cy="11" r="1"></circle>
-                </svg>
-                Voxa Server
+        <header>
+            <div class="voxa-logo">Voxa Control</div>
+            <span class="status-badge">COMMAND CENTER ONLINE</span>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- SECTION 1: OPEN SERVER -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Open Server</h2>
+                    <div class="card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                    </div>
+                </div>
+                <div class="status-indicator">
+                    <div class="pulse-dot"></div>
+                    <div class="status-text">Online</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-top: 20px;">
+                    Main network clusters are operating at peak performance.
+                </p>
             </div>
-            <div class="subtitle">Operator Dashboard</div>
+
+            <!-- SECTION 2: OFFLINE SERVERS -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Offline Servers</h2>
+                    <div class="card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </div>
+                </div>
+                <div style="color: var(--primary-color); font-size: 14px; font-weight: 600; margin-bottom: 15px;">Offline Games:</div>
+                <ul class="games-list">
+                    <li class="game-item">
+                        <div style="flex: 1;">Ludo World</div>
+                        <span class="game-status">Maintenance</span>
+                    </li>
+                    <li class="game-item">
+                        <div style="flex: 1;">Chess Protocol</div>
+                        <span class="game-status">Standby</span>
+                    </li>
+                    <li class="game-item">
+                        <div style="flex: 1;">Combat Grid</div>
+                        <span class="game-status">Offline</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- SECTION 3: PROFILES -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Profiles</h2>
+                    <div class="card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                </div>
+                <div class="profile-card">
+                    <div class="avatar">V</div>
+                    <div class="profile-info">
+                        <h3>Operator_01</h3>
+                        <p>Connection: Global</p>
+                    </div>
+                </div>
+                <div class="rank-badge">Elite Clearance</div>
+                <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary);">
+                        <span>Squad Rank</span>
+                        <span style="color: white;">#124</span>
+                    </div>
+                    <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 8px;">
+                        <div style="width: 75%; height: 100%; background: var(--primary-color); border-radius: 2px; box-shadow: 0 0 10px var(--primary-color);"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <h2 class="welcome-text" id="welcomeMessage">Welcome, Operator</h2>
-        
-        <div class="status-box">
-            <p><strong>Connection Status:</strong> <span style="color: #00ff66;">SECURE</span></p>
-            <p><strong>Network Latency:</strong> 12ms</p>
-            <p>More features (Profile, Game Servers, etc.) will be deployed here soon.</p>
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-btn">Back to Landing</a>
+            <a href="join.html" class="nav-btn" style="border-color: var(--primary-color); color: var(--primary-color);">Join Waitlist</a>
         </div>
-
-        <button class="btn btn-primary" onclick="logout()">
-            TERMINATE CONNECTION
-        </button>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const username = localStorage.getItem('voxa_username');
-            if (username) {
-                document.getElementById('welcomeMessage').innerText = `Welcome, ${username}`;
-            } else {
-                window.location.href = 'login.html';
-            }
-        });
-
-        function logout() {
-            localStorage.removeItem('voxa_token');
-            localStorage.removeItem('voxa_username');
-            window.location.href = 'login.html';
-        }
-    </script>
 </body>
 </html>
