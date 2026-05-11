@@ -1,4 +1,6 @@
-const API_BASE = 'http://localhost:3050/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:3050/api' 
+    : 'https://voxachat-jbyj.onrender.com/api';
 
 window.togglePassword = function(inputId, iconElement) {
     const input = document.getElementById(inputId);
@@ -39,9 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (data.success) {
-                    alert('Connection Established! Welcome ' + data.username);
                     localStorage.setItem('voxa_token', data.token);
-                    localStorage.setItem('voxa_username', data.username);
+                    localStorage.setItem('voxa_user', JSON.stringify({
+                        username: data.username,
+                        email: data.email,
+                        rank: data.rank,
+                        avatar: data.avatar
+                    }));
                     window.location.href = 'dashboard.html';
                 } else {
                     alert(data.error || 'Connection Failed');
@@ -311,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (data.success) {
+                    localStorage.setItem('voxa_user', JSON.stringify(data.user));
                     window.location.href = 'dashboard.html';
                 } else {
                     alert(data.error || 'Onboarding Failed');

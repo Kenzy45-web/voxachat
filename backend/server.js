@@ -106,27 +106,51 @@ app.post('/api/auth/onboarding', async (req, res) => {
     try {
         await pool.query('UPDATE users SET avatar_url = $1 WHERE email = $2', [avatarUrl, email]);
         
+        // Fetch user info for the email
+        const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = userRes.rows[0];
+        const rank = user.id;
+
         // Send Welcome Email
         await transporter.sendMail({
             from: `"Voxa Server" <${process.env.SMTP_USER}>`,
             to: email,
-            subject: 'Welcome to Voxa Server',
+            subject: `Voxa Connection Established: #${rank}`,
             html: `
             <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
-                <h1 style="color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">
-                    <span style="color: #00e5ff;">Welcome to</span> Voxa Server
-                </h1>
-                <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Global Gaming Network Protocol</p>
-                
-                <div style="margin: 40px 0; padding: 20px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px;">
-                    <p style="margin: 0; color: #ffffff; font-size: 16px; line-height: 1.5;">Operator Profile has been <strong>configured</strong>. Your connection is now fully established.</p>
+                <div style="margin-bottom: 25px;">
+                    <span style="font-size: 24px; font-weight: 800; color: #00e5ff; letter-spacing: 2px;">VOXA SERVER</span>
                 </div>
                 
-                <p style="color: #a0a5b5; font-size: 12px;">You can now access the global network dashboard.<br>Welcome aboard, Operator.</p>
+                <div style="margin: 20px auto; width: 100px; height: 100px; border-radius: 20px; border: 2px solid #00e5ff; overflow: hidden; background: #1a1c29;">
+                    <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+
+                <h1 style="color: #ffffff; margin-bottom: 5px;">WELCOME, <span style="color: #00e5ff;">${user.username.toUpperCase()}</span></h1>
+                <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Global Identity Confirmed</p>
+                
+                <div style="margin: 30px 0; padding: 25px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 20px;">
+                    <div style="font-size: 12px; color: #a0a5b5; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Server Clearance Rank</div>
+                    <div style="font-size: 40px; font-weight: 800; color: #00e5ff;">#${rank}</div>
+                </div>
+                
+                <p style="color: #a0a5b5; font-size: 13px; line-height: 1.5;">
+                    Operator profile established. Access to global clusters is now active. <br>
+                    Welcome to the network, Operator.
+                </p>
             </div>`
         });
 
-        res.json({ success: true, message: 'Onboarding complete.' });
+        res.json({ 
+            success: true, 
+            message: 'Onboarding complete.',
+            user: {
+                username: user.username,
+                email: user.email,
+                avatar: avatarUrl,
+                rank: rank
+            }
+        });
     } catch (error) {
         console.error('Onboarding Error:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
@@ -146,14 +170,21 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(403).json({ success: false, error: 'Account not verified' });
         }
 
-        const isValid = await bcrypt.compare(password, user.password_hash);
-        if (!isValid) {
-            return res.status(400).json({ success: false, error: 'Invalid credentials' });
-        }
-
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.json({ success: true, token, username: user.username });
+        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        
+        res.json({ 
+            success: true, 
+            token, 
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar_url,
+            rank: user.id
+        });
     } catch (error) {
+        console.error('Login Error:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
         console.error('Login error:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
