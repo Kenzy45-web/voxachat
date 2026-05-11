@@ -241,6 +241,24 @@
             font-size: 15px;
         }
 
+        /* Generic Button Style */
+        .action-btn {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .action-btn:hover { background: rgba(0, 229, 255, 0.2); border-color: var(--primary-color); }
+
+        /* Appearance Hub */
         .appearance-grid {
             display: flex;
             align-items: center;
@@ -277,7 +295,7 @@
             font-weight: 800;
         }
 
-        /* Machine UI for Color Picker */
+        /* AI Color Machine */
         .color-machine {
             display: none;
             background: rgba(0, 0, 0, 0.4);
@@ -292,19 +310,9 @@
 
         .machine-header { font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .machine-controls { display: flex; gap: 10px; align-items: center; }
+        .machine-controls { display: flex; flex-direction: column; gap: 12px; }
 
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 40px;
-            height: 40px;
-            background: none;
-            cursor: pointer;
-        }
-
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 2px solid var(--border-glow); border-radius: 10px; }
+        .ai-gen-row { display: flex; gap: 10px; width: 100%; }
 
         .hex-input {
             background: rgba(255, 255, 255, 0.05);
@@ -315,6 +323,19 @@
             font-family: 'Inter', monospace;
             flex-grow: 1;
             font-size: 14px;
+            text-align: center;
+        }
+
+        .ai-gen-btn {
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 1px;
         }
 
         .apply-machine-btn {
@@ -322,10 +343,12 @@
             color: #0b0d17;
             border: none;
             border-radius: 10px;
-            padding: 10px 15px;
+            padding: 12px;
             font-weight: 800;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
+            width: 100%;
+            letter-spacing: 2px;
         }
 
         /* Toast Notifications */
@@ -359,7 +382,7 @@
 
         .btn-logout {
             width: 100%;
-            padding: 18px;
+            padding: 20px;
             background: rgba(255, 51, 102, 0.05);
             border: 1px solid rgba(255, 51, 102, 0.2);
             border-radius: 20px;
@@ -474,11 +497,13 @@
 
                 <!-- Custom Color Machine -->
                 <div class="color-machine" id="colorMachine">
-                    <div class="machine-header">Appearance Machine v1.0</div>
+                    <div class="machine-header">AI Color Engine v2.0</div>
                     <div class="machine-controls">
-                        <input type="color" id="machinePicker" value="#00e5ff">
-                        <input type="text" id="machineHex" class="hex-input" placeholder="#00E5FF">
-                        <button class="apply-machine-btn" id="applyMachineBtn">APPLY</button>
+                        <div class="ai-gen-row">
+                            <input type="text" id="machineHex" class="hex-input" placeholder="#00E5FF">
+                            <button class="ai-gen-btn" id="aiGenBtn">GENERATE AI</button>
+                        </div>
+                        <button class="apply-machine-btn" id="applyMachineBtn">APPLY PROTOCOL</button>
                     </div>
                 </div>
             </div>
@@ -492,11 +517,11 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                     </div>
                     <div class="setting-details">
-                        <div class="setting-label">Notifications</div>
-                        <div class="setting-value">Bot audio alerts enabled</div>
+                        <div class="setting-label">Global Notifications</div>
+                        <div class="setting-value" id="notifStatus">Audio alerts active</div>
                     </div>
                 </div>
-                <div class="add-theme-btn" style="background: var(--primary-color);">✓</div>
+                <button class="action-btn" id="notifBtn">ARM ALERTS</button>
             </div>
         </div>
 
@@ -505,7 +530,7 @@
             <div class="setting-item">
                 <div class="setting-info">
                     <div class="setting-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                     </div>
                     <div class="setting-details">
                         <div class="setting-label">Email</div>
@@ -571,7 +596,7 @@
         // Copy Username
         document.getElementById('copyUsername').onclick = () => {
             navigator.clipboard.writeText(userData.username);
-            showToast('Callsign Copied');
+            showToast('Callsign Secured');
         };
 
         // Modal
@@ -582,35 +607,50 @@
             localStorage.setItem('voxa_user', JSON.stringify(userData));
             document.getElementById('avatarModal').classList.remove('active');
             refreshUI();
-            showToast('Avatar Protocol Updated');
+            showToast('Avatar Synced');
         }
 
-        // Appearance Machine
+        // AI Color Engine
         const machineBtn = document.getElementById('openMachineBtn');
         const machine = document.getElementById('colorMachine');
+        const machineHex = document.getElementById('machineHex');
+        const aiGenBtn = document.getElementById('aiGenBtn');
+        
         machineBtn.onclick = () => machine.classList.toggle('active');
 
-        const machinePicker = document.getElementById('machinePicker');
-        const machineHex = document.getElementById('machineHex');
-        machinePicker.oninput = (e) => machineHex.value = e.target.value.toUpperCase();
+        aiGenBtn.onclick = () => {
+            const colors = ['#00E5FF', '#FF3366', '#00FF88', '#7000FF', '#FFA500', '#FFD700', '#FF00FF', '#00FFFF'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            machineHex.value = randomColor;
+            showToast('AI Color Generated');
+        };
         
         document.getElementById('applyMachineBtn').onclick = () => {
-            const color = machineHex.value || machinePicker.value;
+            const color = machineHex.value || '#00E5FF';
             setTheme(color, color);
-            showToast('Custom Theme Applied');
+            showToast('Interface Theme Applied');
         };
 
         function setTheme(primary, secondary) {
             document.documentElement.style.setProperty('--primary-color', primary);
             document.documentElement.style.setProperty('--secondary-color', secondary);
             localStorage.setItem('voxa_theme', JSON.stringify({primary, secondary}));
-            
-            const circles = document.querySelectorAll('.theme-circle');
-            circles.forEach(c => c.classList.remove('active'));
         }
 
         const savedTheme = JSON.parse(localStorage.getItem('voxa_theme'));
         if (savedTheme) setTheme(savedTheme.primary, savedTheme.secondary);
+
+        // Notifications
+        const notifBtn = document.getElementById('notifBtn');
+        const notifStatus = document.getElementById('notifStatus');
+        let notifsArmed = true;
+
+        notifBtn.onclick = () => {
+            notifsArmed = !notifsArmed;
+            notifBtn.innerText = notifsArmed ? 'ARM ALERTS' : 'DISARM ALERTS';
+            notifStatus.innerText = notifsArmed ? 'Audio alerts active' : 'Audio alerts offline';
+            showToast(notifsArmed ? 'Alerts Armed' : 'Alerts Offline');
+        };
 
         document.getElementById('logoutBtn').onclick = () => {
             localStorage.removeItem('voxa_token');
