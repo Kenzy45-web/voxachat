@@ -489,6 +489,21 @@
             </div>
         </div>
 
+        <div class="settings-group">
+            <div class="group-label">Network Identity</div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div class="setting-details">
+                        <div class="setting-label">Email Address</div>
+                        <div class="setting-value" id="valEmail">...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <button class="btn-logout" onclick="window.location.href='login.html'">LOGOUT</button>
     </div>
 
@@ -539,6 +554,7 @@
             document.getElementById('userName').innerText = userData.username;
             document.getElementById('userRankText').innerText = `#${userData.rank}`;
             document.getElementById('headerEmail').innerText = userData.email;
+            document.getElementById('valEmail').innerText = userData.email;
             
             const avatarEl = document.getElementById('userAvatar');
             const avatarSrc = userData.avatar && (userData.avatar.startsWith('data:image') || userData.avatar.startsWith('http')) ? userData.avatar : null;
