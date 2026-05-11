@@ -207,8 +207,49 @@ app.post('/api/auth/google', async (req, res) => {
             // New user, needs username and password
             return res.json({ success: true, requiresRegistration: true, email, google_id });
         }
+app.post('/api/auth/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Network ID not found' });
+        }
+
+        const otp = generateOTP();
+        const expiresAt = new Date(Date.now() + 15 * 60000); // 15 mins
+        await pool.query(
+            'INSERT INTO otps (email, otp, expires_at) VALUES ($1, $2, $3)',
+            [email, otp, expiresAt]
+        );
+
+        // Send Password Reset Email
+        await transporter.sendMail({
+            from: `"Voxa Server" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Voxa Protocol: Password Recovery',
+            html: `
+            <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
+                <div style="margin-bottom: 20px;">
+                    <span style="font-size: 24px; font-weight: 800; color: #00e5ff; letter-spacing: 2px;">VOXA SERVER</span>
+                </div>
+                <h2 style="color: #ffffff; margin-bottom: 5px;">PASSWORD RECOVERY</h2>
+                <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Identity Verification Protocol</p>
+                
+                <div style="margin: 40px 0; padding: 30px; background-color: rgba(255, 51, 102, 0.05); border: 1px solid rgba(255, 51, 102, 0.2); border-radius: 20px;">
+                    <p style="margin: 0 0 10px 0; color: #a0a5b5; font-size: 12px; text-transform: uppercase;">Recovery Clearance Code</p>
+                    <h2 style="color: #ff3366; font-size: 40px; letter-spacing: 8px; margin: 0;">${otp}</h2>
+                </div>
+                
+                <p style="color: #a0a5b5; font-size: 13px; line-height: 1.5;">
+                    Use this code to establish a new access protocol. <br>
+                    If you did not initiate this recovery, secure your account immediately.
+                </p>
+            </div>`
+        });
+
+        res.json({ success: true, message: 'Recovery code sent to your Network ID.' });
     } catch (error) {
-        console.error('Google Auth Error:', error);
+        console.error('Forgot Password Error:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 });
