@@ -206,34 +206,59 @@ app.post('/api/auth/google-complete', async (req, res) => {
 });
 
 app.post('/api/waitlist', async (req, res) => {
-    const { email } = req.body;
+    const { email, username } = req.body;
     try {
+        // Check if email already exists
         const check = await pool.query('SELECT * FROM waitlist WHERE email = $1', [email]);
         if (check.rows.length > 0) {
             return res.status(400).json({ success: false, error: 'You are already in the family! We will notify you when we launch.' });
         }
 
-        await pool.query('INSERT INTO waitlist (email) VALUES ($1)', [email]);
-        res.json({ success: true, message: 'Waitlist joined successfully.' });
+        // Insert new user and get their rank (ID)
+        const result = await pool.query(
+            'INSERT INTO waitlist (email, username) VALUES ($1, $2) RETURNING id', 
+            [email, username || 'Anonymous Operator']
+        );
+        const rank = result.rows[0].id;
+
+        res.json({ 
+            success: true, 
+            message: 'Waitlist joined successfully.',
+            user: {
+                username: username || 'Anonymous Operator',
+                email: email,
+                rank: rank
+            }
+        });
 
         // Send Waitlist Confirmation Email (Async/Optional)
         try {
             await transporter.sendMail({
                 from: `"Voxa Server" <${process.env.SMTP_USER}>`,
                 to: email,
-                subject: 'Voxa Server: Spot Secured',
+                subject: `Voxa Access Granted: #${rank}`,
                 html: `
                 <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
-                    <h1 style="color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">
-                        <span style="color: #00e5ff;">Spot Secured</span>
-                    </h1>
-                    <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Voxa Server Global Waitlist</p>
-                    
-                    <div style="margin: 40px 0; padding: 20px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px;">
-                        <p style="margin: 0; color: #ffffff; font-size: 16px; line-height: 1.5;">Your email has been registered for the global launch on <strong>August 10, 2026</strong>.</p>
+                    <div style="margin-bottom: 20px;">
+                        <span style="font-size: 24px; font-weight: 800; color: #00e5ff; letter-spacing: 2px;">VOXA SERVER</span>
                     </div>
                     
-                    <p style="color: #a0a5b5; font-size: 12px;">We will contact you with Operator Clearance codes when the servers go live.</p>
+                    <h1 style="color: #ffffff; margin-bottom: 5px;">WELCOME, <span style="color: #00e5ff;">${username || 'OPERATOR'}</span></h1>
+                    <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Global Access Protocol Initialized</p>
+                    
+                    <div style="margin: 40px 0; padding: 30px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 20px;">
+                        <div style="font-size: 12px; color: #a0a5b5; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Global Server Rank</div>
+                        <div style="font-size: 48px; font-weight: 800; color: #00e5ff; text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);">#${rank}</div>
+                    </div>
+                    
+                    <p style="margin: 20px 0; color: #ffffff; font-size: 16px; line-height: 1.6;">
+                        Your spot has been prioritized for the <strong>August 10, 2026</strong> launch. 
+                        We have dispatched your clearance protocols to the global network.
+                    </p>
+                    
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <p style="color: #a0a5b5; font-size: 12px;">This is an automated system dispatch. Do not reply.</p>
+                    </div>
                 </div>`
             });
             console.log('Confirmation email sent to:', email);

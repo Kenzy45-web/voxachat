@@ -39,7 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (waitlistForm) {
         waitlistForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('waitlistEmail').value;
+            const emailInput = document.getElementById('waitlistEmail');
+            const usernameInput = document.getElementById('waitlistUsername');
+            const email = emailInput.value;
+            const username = usernameInput ? usernameInput.value : '';
             const originalText = waitlistBtn.innerHTML;
 
             try {
@@ -50,12 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API_BASE}/waitlist`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
+                    body: JSON.stringify({ email, username })
                 });
                 
                 const data = await res.json();
 
                 if (data.success) {
+                    // Store user data for the dashboard
+                    localStorage.setItem('voxa_user', JSON.stringify(data.user));
                     showSuccess();
                 } else {
                     alert(data.error || 'Failed to join waitlist.');
@@ -73,8 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="success-message" style="background: rgba(0, 229, 255, 0.1); border: 1px solid #00e5ff; padding: 25px; border-radius: 15px; animation: fadeIn 0.5s ease-out;">
                         <div style="font-size: 40px; margin-bottom: 15px;">✓</div>
                         <h3 style="color: #00e5ff; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 2px;">Access Granted</h3>
-                        <p style="margin: 0; color: #fff; line-height: 1.6;">Your network ID <strong>${email}</strong> has been prioritized. Clearance protocols have been dispatched to your inbox.</p>
-                        <button onclick="location.reload()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 15px; border-radius: 8px; cursor: pointer;">Back</button>
+                        <p style="margin: 0; color: #fff; line-height: 1.6;">Welcome <strong>${username || 'Operator'}</strong>! Your network ID has been prioritized. Clearance protocols have been dispatched to your inbox.</p>
+                        <button onclick="window.location.href='dashboard.html'" style="margin-top: 20px; background: #00e5ff; border: none; color: #0b0d17; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 800; width: 100%;">Enter Control Center</button>
                     </div>
                 `;
             }

@@ -360,15 +360,15 @@
                     </div>
                 </div>
                 <div class="profile-container">
-                    <div class="avatar">V</div>
+                    <div class="avatar" id="userAvatar">V</div>
                     <div class="profile-info">
-                        <h3>Operator_01</h3>
-                        <p class="email">isaiahikeoluwa8@gmail.com</p>
+                        <h3 id="userName">Operator_01</h3>
+                        <p class="email" id="userEmail">isaiahikeoluwa8@gmail.com</p>
                     </div>
                 </div>
                 <div class="rank-info">
                     <span class="rank-label">Server Rank</span>
-                    <span class="rank-number">#1</span>
+                    <span class="rank-number" id="userRank">#1</span>
                 </div>
             </div>
         </div>
@@ -415,6 +415,14 @@
     </div>
 
     <script>
+        // Load user data from localStorage
+        const userData = JSON.parse(localStorage.getItem('voxa_user') || '{"username":"Operator_01","email":"operator@voxa.com","rank":"1"}');
+        
+        document.getElementById('userName').innerText = userData.username;
+        document.getElementById('userEmail').innerText = userData.email;
+        document.getElementById('userRank').innerText = `#${userData.rank}`;
+        document.getElementById('userAvatar').innerText = userData.username.charAt(0).toUpperCase();
+
         function openModal(id) {
             const modal = document.getElementById(id);
             modal.style.display = 'flex';
