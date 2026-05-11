@@ -214,28 +214,32 @@ app.post('/api/waitlist', async (req, res) => {
         }
 
         await pool.query('INSERT INTO waitlist (email) VALUES ($1)', [email]);
-
-        // Send Waitlist Confirmation Email
-        await transporter.sendMail({
-            from: `"Voxa Server" <${process.env.SMTP_USER}>`,
-            to: email,
-            subject: 'Voxa Server: Spot Secured',
-            html: `
-            <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
-                <h1 style="color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">
-                    <span style="color: #00e5ff;">Spot Secured</span>
-                </h1>
-                <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Voxa Server Global Waitlist</p>
-                
-                <div style="margin: 40px 0; padding: 20px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px;">
-                    <p style="margin: 0; color: #ffffff; font-size: 16px; line-height: 1.5;">Your email has been registered for the global launch on <strong>August 10, 2026</strong>.</p>
-                </div>
-                
-                <p style="color: #a0a5b5; font-size: 12px;">We will contact you with Operator Clearance codes when the servers go live.</p>
-            </div>`
-        });
-
         res.json({ success: true, message: 'Waitlist joined successfully.' });
+
+        // Send Waitlist Confirmation Email (Async/Optional)
+        try {
+            await transporter.sendMail({
+                from: `"Voxa Server" <${process.env.SMTP_USER}>`,
+                to: email,
+                subject: 'Voxa Server: Spot Secured',
+                html: `
+                <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px 20px; background-color: #0b0d17; color: #ffffff; text-align: center; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.2); max-width: 500px; margin: 0 auto;">
+                    <h1 style="color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">
+                        <span style="color: #00e5ff;">Spot Secured</span>
+                    </h1>
+                    <p style="color: #a0a5b5; font-size: 14px; margin-top: 0;">Voxa Server Global Waitlist</p>
+                    
+                    <div style="margin: 40px 0; padding: 20px; background-color: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px;">
+                        <p style="margin: 0; color: #ffffff; font-size: 16px; line-height: 1.5;">Your email has been registered for the global launch on <strong>August 10, 2026</strong>.</p>
+                    </div>
+                    
+                    <p style="color: #a0a5b5; font-size: 12px;">We will contact you with Operator Clearance codes when the servers go live.</p>
+                </div>`
+            });
+            console.log('Confirmation email sent to:', email);
+        } catch (emailError) {
+            console.error('Email sending failed (but user registered):', emailError);
+        }
     } catch (error) {
         console.error('Waitlist Error:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
