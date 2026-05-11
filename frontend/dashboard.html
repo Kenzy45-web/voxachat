@@ -457,6 +457,12 @@
             modal.classList.remove('active');
             setTimeout(() => modal.style.display = 'none', 300);
         }
+        // Apply saved theme on load
+        const savedTheme = JSON.parse(localStorage.getItem('voxa_theme'));
+        if (savedTheme) {
+            document.documentElement.style.setProperty('--primary-color', savedTheme.primary);
+            document.documentElement.style.setProperty('--secondary-color', savedTheme.secondary);
+        }
     </script>
 </body>
 </html>

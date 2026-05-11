@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voxa | Operator Station</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
-    <style>
+    <style id="themeStyles">
         :root {
             --primary-color: #00e5ff;
             --secondary-color: #7000ff;
@@ -14,7 +14,8 @@
             --text-secondary: #a0a5b5;
             --border-glow: rgba(0, 229, 255, 0.2);
         }
-
+    </style>
+    <style>
         * {
             box-sizing: border-box;
             scrollbar-width: none;
@@ -101,17 +102,24 @@
             text-align: center;
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
+            position: relative;
         }
 
-        .avatar-container {
+        .avatar-wrapper {
+            position: relative;
             width: 110px;
             height: 110px;
             margin: 0 auto 20px;
+        }
+
+        .avatar-container {
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             padding: 3px;
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            position: relative;
             box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            overflow: hidden;
         }
 
         .avatar-img {
@@ -129,30 +137,51 @@
             object-fit: cover;
         }
 
-        .rank-badge {
+        .add-avatar-btn {
             position: absolute;
-            bottom: 5px;
-            right: 5px;
+            bottom: 0;
+            right: -10px;
+            width: 35px;
+            height: 35px;
             background: var(--primary-color);
             color: #0b0d17;
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 13px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 3px solid var(--bg-color);
+            font-size: 20px;
             font-weight: 800;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: 0.3s;
+        }
+
+        .add-avatar-btn:hover {
+            transform: scale(1.1);
         }
 
         .username {
             font-size: 28px;
             font-weight: 800;
-            margin: 10px 0 5px;
+            margin: 10px 0 2px;
             letter-spacing: 1px;
+        }
+
+        .rank-text {
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 5px;
         }
 
         .email {
             color: var(--text-secondary);
             font-size: 15px;
-            opacity: 0.8;
+            opacity: 0.6;
         }
 
         /* Settings List */
@@ -187,8 +216,6 @@
         .setting-item:hover {
             background: rgba(255, 255, 255, 0.07);
             border-color: var(--border-glow);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
         .setting-info {
@@ -225,9 +252,90 @@
             margin-top: 2px;
         }
 
-        .chevron {
+        /* Avatar Selection Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #111420;
+            border: 1px solid var(--border-glow);
+            border-radius: 30px;
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .char-option {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: 0.3s;
+        }
+
+        .char-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .char-option:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-color);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
             color: var(--text-secondary);
-            opacity: 0.5;
+            transition: 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            color: var(--text-secondary);
         }
 
         .btn-logout {
@@ -246,12 +354,6 @@
             margin-bottom: 50px;
         }
 
-        .btn-logout:hover {
-            background: rgba(255, 51, 102, 0.15);
-            border-color: #ff3366;
-            box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
-        }
-
     </style>
 </head>
 <body>
@@ -266,12 +368,33 @@
         </header>
 
         <div class="profile-card">
-            <div class="avatar-container">
-                <div class="avatar-img" id="userAvatar">?</div>
-                <div class="rank-badge" id="userRank">#1</div>
+            <div class="avatar-wrapper">
+                <div class="avatar-container">
+                    <div class="avatar-img" id="userAvatar">?</div>
+                </div>
+                <div class="add-avatar-btn" id="addAvatarBtn">+</div>
             </div>
             <div class="username" id="userName">Loading...</div>
+            <div class="rank-text" id="userRankText">RANK #...</div>
             <div class="email" id="userEmail">accessing database...</div>
+        </div>
+
+        <div class="settings-group">
+            <div class="group-label">Appearance Hub</div>
+            <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 15px; cursor: default;">
+                <div class="setting-info">
+                    <div class="setting-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    </div>
+                    <div class="setting-label">Theme Protocol</div>
+                </div>
+                <div class="color-picker" style="display: flex; gap: 10px;">
+                    <div class="color-option" style="background: #00e5ff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;" onclick="setTheme('#00e5ff', '#7000ff')"></div>
+                    <div class="color-option" style="background: #ff3366; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;" onclick="setTheme('#ff3366', '#ff00ff')"></div>
+                    <div class="color-option" style="background: #00ff88; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;" onclick="setTheme('#00ff88', '#0099ff')"></div>
+                    <div class="color-option" style="background: #7000ff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;" onclick="setTheme('#7000ff', '#00e5ff')"></div>
+                </div>
+            </div>
         </div>
 
         <div class="settings-group">
@@ -305,81 +428,119 @@
                     </div>
                     <div class="setting-details">
                         <div class="setting-label">Server Ranking</div>
-                        <div class="setting-value" id="valRank">#1</div>
+                        <div class="setting-value" id="valRank">#...</div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="settings-group">
-            <div class="group-label">Security Protocol</div>
-            <div class="setting-item">
-                <div class="setting-info">
-                    <div class="setting-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 21 17 13 7 13 7 21"></polyline><path d="M6 7V4a4 4 0 0 1 8 0v3"></path></svg>
-                    </div>
-                    <div class="setting-label">Gaming UIDs</div>
-                </div>
-                <div class="chevron">›</div>
-            </div>
-            <div class="setting-item">
-                <div class="setting-info">
-                    <div class="setting-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                    </div>
-                    <div class="setting-label">Password & Keys</div>
-                </div>
-                <div class="chevron">›</div>
-            </div>
-        </div>
-
-        <div class="settings-group">
-            <div class="group-label">Alerts</div>
-            <div class="setting-item">
-                <div class="setting-info">
-                    <div class="setting-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    </div>
-                    <div class="setting-label">Notifications</div>
-                </div>
-                <div class="chevron">›</div>
             </div>
         </div>
 
         <button class="btn-logout" id="logoutBtn">TERMINATE SESSION</button>
     </div>
 
+    <!-- Avatar Selection Modal -->
+    <div class="modal" id="avatarModal">
+        <div class="modal-content">
+            <div class="close-modal" id="closeModal">✕</div>
+            <div class="modal-header">
+                <h2 style="margin: 0; color: var(--primary-color);">SELECT AVATAR</h2>
+                <p style="color: var(--text-secondary); font-size: 14px;">Elite Character Protocols</p>
+            </div>
+            
+            <div class="char-grid" id="charGrid">
+                <!-- Elite Bot Characters -->
+                <div class="char-option" onclick="updateAvatar('char1.png')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Operator1&backgroundColor=0b0d17" alt="C1"></div>
+                <div class="char-option" onclick="updateAvatar('char2.png')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Ghost&backgroundColor=0b0d17" alt="C2"></div>
+                <div class="char-option" onclick="updateAvatar('char3.png')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Shadow&backgroundColor=0b0d17" alt="C3"></div>
+                <div class="char-option" onclick="updateAvatar('char4.png')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Titan&backgroundColor=0b0d17" alt="C4"></div>
+                <div class="char-option" onclick="updateAvatar('char5.png')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Alpha&backgroundColor=0b0d17" alt="C5"></div>
+                <div class="char-option" onclick="updateAvatar('char6.png')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Raven&backgroundColor=0b0d17" alt="C6"></div>
+            </div>
+
+            <div class="upload-area" id="galleryBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <div>UPLOAD FROM GALLERY</div>
+                <input type="file" id="fileInput" hidden accept="image/*">
+            </div>
+        </div>
+    </div>
+
     <script>
         // Load User Data
         const userData = JSON.parse(localStorage.getItem('voxa_user'));
         
-        if (!userData) {
-            window.location.href = 'login.html';
-        } else {
-            // Update Header Card
+        function refreshUI() {
+            if (!userData) {
+                window.location.href = 'login.html';
+                return;
+            }
             document.getElementById('userName').innerText = userData.username;
             document.getElementById('userEmail').innerText = userData.email;
-            document.getElementById('userRank').innerText = `#${userData.rank}`;
-            
-            // Update Identity Section
+            document.getElementById('userRankText').innerText = `RANK #${userData.rank}`;
             document.getElementById('valUsername').innerText = userData.username;
             document.getElementById('valEmail').innerText = userData.email;
             document.getElementById('valRank').innerText = `#${userData.rank}`;
             
             const avatarEl = document.getElementById('userAvatar');
-            if (userData.avatar && userData.avatar.startsWith('data:image')) {
+            if (userData.avatar && (userData.avatar.startsWith('data:image') || userData.avatar.startsWith('http'))) {
                 avatarEl.innerHTML = `<img src="${userData.avatar}" style="width:100%; height:100%; object-fit:cover;">`;
             } else {
                 avatarEl.innerText = userData.username.charAt(0).toUpperCase();
             }
         }
+        refreshUI();
+
+        // Modal Logic
+        const modal = document.getElementById('avatarModal');
+        document.getElementById('addAvatarBtn').onclick = () => modal.classList.add('active');
+        document.getElementById('closeModal').onclick = () => modal.classList.remove('active');
+
+        // Avatar Update
+        function updateAvatar(newUrl) {
+            // If it's one of the Dicebear ones
+            if (newUrl.startsWith('char')) {
+                // Find the img src
+                const options = document.querySelectorAll('.char-option img');
+                const selected = Array.from(options).find(img => img.alt === (newUrl === 'char1.png' ? 'C1' : newUrl === 'char2.png' ? 'C2' : newUrl === 'char3.png' ? 'C3' : newUrl === 'char4.png' ? 'C4' : newUrl === 'char5.png' ? 'C5' : 'C6'));
+                userData.avatar = selected.src;
+            } else {
+                userData.avatar = newUrl;
+            }
+            
+            localStorage.setItem('voxa_user', JSON.stringify(userData));
+            modal.classList.remove('active');
+            refreshUI();
+            
+            // Sync with Backend (Optional, but recommended)
+            // fetch('/api/user/update-avatar', { ... });
+        }
+
+        // Gallery Upload
+        document.getElementById('galleryBtn').onclick = () => document.getElementById('fileInput').click();
+        document.getElementById('fileInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => updateAvatar(event.target.result);
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // Theme Management
+        function setTheme(primary, secondary) {
+            document.documentElement.style.setProperty('--primary-color', primary);
+            document.documentElement.style.setProperty('--secondary-color', secondary);
+            localStorage.setItem('voxa_theme', JSON.stringify({primary, secondary}));
+        }
+
+        const savedTheme = JSON.parse(localStorage.getItem('voxa_theme'));
+        if (savedTheme) setTheme(savedTheme.primary, savedTheme.secondary);
 
         // Logout logic
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('logoutBtn').onclick = () => {
             localStorage.removeItem('voxa_token');
             localStorage.removeItem('voxa_user');
             window.location.href = 'login.html';
-        });
+        };
     </script>
 </body>
 </html>
