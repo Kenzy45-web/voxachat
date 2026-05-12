@@ -19,13 +19,15 @@
 
 body {
     background-color: var(--bg-color);
+    background-image: url('bg-logo.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color: var(--text-primary);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-image: radial-gradient(circle at top right, rgba(0, 229, 255, 0.1), transparent 40%),
-                      radial-gradient(circle at bottom left, rgba(0, 229, 255, 0.05), transparent 40%);
     overflow-y: auto;
     overflow-x: hidden;
     padding: 20px;
