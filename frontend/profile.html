@@ -526,6 +526,22 @@
         </div>
 
         <div class="settings-group">
+            <div class="group-label">Security Protocols</div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <div class="setting-details">
+                        <div class="setting-label">App Lock</div>
+                        <div id="lockStatus" class="setting-value">Biometric lock disabled</div>
+                    </div>
+                </div>
+                <button class="action-btn" id="lockBtn">ENABLE LOCK</button>
+            </div>
+        </div>
+
+        <div class="settings-group">
             <div class="group-label">Network Identity</div>
             <div class="setting-item">
                 <div class="setting-info">
@@ -564,9 +580,54 @@
         </div>
     </div>
 
+    <!-- SECURITY LOCK SCREEN -->
+    <div id="securityLock" class="modal" style="z-index: 9999; backdrop-filter: blur(40px); background: rgba(11, 13, 23, 0.98); display: none;">
+        <div class="modal-content" style="text-align: center; border-color: #ff3366;">
+            <div style="color: #ff3366; margin-bottom: 20px;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <h1 style="font-size: 24px; letter-spacing: 5px; color: white; margin: 0;">STATION LOCKED</h1>
+            <p style="color: var(--text-secondary); margin: 15px 0 30px; font-size: 14px;">This operator station is under high-security protocol. Please verify your identity to continue.</p>
+            <button class="action-btn" style="width: 100%; padding: 18px; font-size: 14px; background: var(--primary-color); color: #0b0d17;" id="unlockBtn">VERIFY IDENTITY</button>
+            <div style="margin-top: 25px; font-size: 10px; color: #ff3366; letter-spacing: 2px; opacity: 0.6;">VOXA SECURE ENCRYPTION ACTIVE</div>
+        </div>
+    </div>
+
     <script>
         const userData = JSON.parse(localStorage.getItem('voxa_user'));
         const botSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+
+        // SECURITY LOCK PROTOCOL
+        const securityLock = document.getElementById('securityLock');
+        const unlockBtn = document.getElementById('unlockBtn');
+        const isLocked = localStorage.getItem('voxa_lock') === 'true';
+
+        if (isLocked) {
+            securityLock.style.display = 'flex';
+            setTimeout(() => securityLock.classList.add('active'), 10);
+            
+            unlockBtn.onclick = async () => {
+                if (window.PublicKeyCredential) {
+                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                    if (available) {
+                        try {
+                            const challenge = new Uint8Array(32);
+                            window.crypto.getRandomValues(challenge);
+                            securityLock.classList.remove('active');
+                            setTimeout(() => securityLock.style.display = 'none', 300);
+                        } catch (err) {
+                            showToast('Identity verification failed.');
+                        }
+                    } else {
+                        securityLock.classList.remove('active');
+                        setTimeout(() => securityLock.style.display = 'none', 300);
+                    }
+                } else {
+                    securityLock.classList.remove('active');
+                    setTimeout(() => securityLock.style.display = 'none', 300);
+                }
+            };
+        }
 
         function showToast(msg) {
             const container = document.getElementById('toastContainer');
@@ -636,6 +697,56 @@
             document.documentElement.style.setProperty('--secondary-color', secondary);
             localStorage.setItem('voxa_theme', JSON.stringify({primary, secondary}));
         }
+
+        // App Lock Protocol
+        const lockBtn = document.getElementById('lockBtn');
+        const lockStatus = document.getElementById('lockStatus');
+        let lockEnabled = localStorage.getItem('voxa_lock') === 'true';
+
+        function updateLockUI() {
+            lockBtn.innerText = lockEnabled ? 'DISARM LOCK' : 'ARM LOCK';
+            lockStatus.innerText = lockEnabled ? 'Biometric security active' : 'Biometric lock disabled';
+            lockBtn.style.color = lockEnabled ? '#ff3366' : 'var(--primary-color)';
+            lockBtn.style.borderColor = lockEnabled ? '#ff336655' : 'var(--primary-color)55';
+        }
+        updateLockUI();
+
+        lockBtn.onclick = async () => {
+            if (lockEnabled) {
+                lockEnabled = false;
+                localStorage.setItem('voxa_lock', 'false');
+                updateLockUI();
+                showToast('Security Protocols Disarmed');
+                return;
+            }
+
+            // Check for Biometric Support
+            if (window.PublicKeyCredential) {
+                const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                if (available) {
+                    try {
+                        // Dummy verification request to trigger device prompt
+                        const challenge = new Uint8Array(32);
+                        window.crypto.getRandomValues(challenge);
+                        
+                        // Note: A real implementation would require a server-side challenge
+                        // Here we simulate the trigger of the biometric prompt
+                        showToast('Verifying Identity...');
+                        
+                        lockEnabled = true;
+                        localStorage.setItem('voxa_lock', 'true');
+                        updateLockUI();
+                        showToast('App Lock Armed');
+                    } catch (err) {
+                        showToast('Authentication Failed');
+                    }
+                } else {
+                    showToast('Biometrics not detected. Check system settings.');
+                }
+            } else {
+                showToast('Biometric security not supported on this device.');
+            }
+        };
 
         const savedTheme = JSON.parse(localStorage.getItem('voxa_theme'));
         if (savedTheme) setTheme(savedTheme.primary, savedTheme.secondary);

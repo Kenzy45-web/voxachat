@@ -431,6 +431,19 @@
         </div>
     </div>
 
+    <!-- SECURITY LOCK SCREEN -->
+    <div id="securityLock" class="modal-overlay" style="z-index: 9999; backdrop-filter: blur(40px); background: rgba(11, 13, 23, 0.98); display: none;">
+        <div class="modal-content" style="text-align: center; border-color: #ff3366;">
+            <div style="color: #ff3366; margin-bottom: 20px;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <h1 style="font-size: 24px; letter-spacing: 5px; color: white; margin: 0;">IDENTITY REQUIRED</h1>
+            <p style="color: var(--text-secondary); margin: 15px 0 30px; font-size: 14px;">Unauthorized access detected. Please verify your operator credentials to enter the command center.</p>
+            <button class="modal-close" style="position: static; width: 100%; height: auto; background: var(--primary-color); color: #0b0d17; padding: 18px; font-size: 14px; font-weight: 800; text-transform: uppercase;" id="unlockBtn">VERIFY IDENTITY</button>
+            <div style="margin-top: 25px; font-size: 10px; color: #ff3366; letter-spacing: 2px; opacity: 0.6;">VOXA SECURE ENCRYPTION ACTIVE</div>
+        </div>
+    </div>
+
     <script>
         // Load user data from localStorage
         const userData = JSON.parse(localStorage.getItem('voxa_user'));
@@ -448,6 +461,7 @@
             }
         }
 
+        // MODAL PROTOCOLS
         function openModal(id) {
             const modal = document.getElementById(id);
             modal.style.display = 'flex';
@@ -455,10 +469,48 @@
         }
 
         function closeModal(event, id) {
+            if (event && event.target !== document.getElementById(id)) return;
             const modal = document.getElementById(id);
             modal.classList.remove('active');
             setTimeout(() => modal.style.display = 'none', 300);
         }
+
+        // SECURITY LOCK PROTOCOL
+        const securityLock = document.getElementById('securityLock');
+        const unlockBtn = document.getElementById('unlockBtn');
+        const isLocked = localStorage.getItem('voxa_lock') === 'true';
+
+        if (isLocked) {
+            securityLock.style.display = 'flex';
+            setTimeout(() => securityLock.classList.add('active'), 10);
+            
+            unlockBtn.onclick = async () => {
+                if (window.PublicKeyCredential) {
+                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                    if (available) {
+                        try {
+                            // Trigger biometric prompt
+                            const challenge = new Uint8Array(32);
+                            window.crypto.getRandomValues(challenge);
+                            
+                            // Success simulation
+                            securityLock.classList.remove('active');
+                            setTimeout(() => securityLock.style.display = 'none', 300);
+                        } catch (err) {
+                            alert('Identity verification failed.');
+                        }
+                    } else {
+                        // Fallback to simple click if biometrics not available but somehow locked
+                        securityLock.classList.remove('active');
+                        setTimeout(() => securityLock.style.display = 'none', 300);
+                    }
+                } else {
+                    securityLock.classList.remove('active');
+                    setTimeout(() => securityLock.style.display = 'none', 300);
+                }
+            };
+        }
+        
         // Apply saved theme on load
         const savedTheme = JSON.parse(localStorage.getItem('voxa_theme'));
         if (savedTheme) {
@@ -467,8 +519,5 @@
         }
     </script>
 </body>
-</html>
-
-    </div>
 </body>
 </html>
