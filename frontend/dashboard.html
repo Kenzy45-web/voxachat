@@ -34,7 +34,14 @@
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 200%; height: 200%;
             background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.03), transparent 50%);
-            animation: drift 20s infinite linear; pointer-events: none; z-index: 0;
+            animation: drift 20s infinite linear; pointer-events: none; z-index: 1;
+        }
+
+        /* Stealth Dimmer Overlay */
+        body::after {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 6, 10, 0.85); /* 85% deep black fade */
+            pointer-events: none; z-index: 2;
         }
         @keyframes drift { from { transform: translate(-25%, -25%); } to { transform: translate(0, 0); } }
 
