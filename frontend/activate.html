@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voxa Open Server | Reactivate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            color: #00e5ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        .toast.error {
+            background: rgba(255, 51, 102, 0.1);
+            border-color: rgba(255, 51, 102, 0.3);
+            color: #ff3366;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="auth-container">
+        <div class="logo-container">
+            <div class="logo-text">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px; color: var(--primary-color);">
+                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                    <path d="M6 12h4"></path>
+                    <path d="M8 10v4"></path>
+                    <circle cx="15" cy="13" r="1"></circle>
+                    <circle cx="18" cy="11" r="1"></circle>
+                </svg>
+                Voxa Server
+            </div>
+            <div class="subtitle">Network ID Reactivation Protocol</div>
+        </div>
+
+        <div style="text-align: center; color: #a0a5b5; font-size: 13px; line-height: 1.5; margin-bottom: 25px;">
+            Your account is currently deactivated. Enter your credentials below to instantly restore your access to the global network.
+        </div>
+
+        <form id="activateForm">
+            <div class="input-group">
+                <input type="email" id="email" required placeholder=" ">
+                <label for="email">Network ID (Email)</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="password" required placeholder=" ">
+                <label for="password">Access Code (Password)</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="activateBtn">
+                ACTIVATE VOXA SERVER
+            </button>
+        </form>
+
+        <div class="footer-links" style="margin-top: 30px;">
+            <p><a href="login.html">Return to Login</a></p>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        document.getElementById('activateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('activateBtn');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            btn.innerText = 'PROCESSING...';
+            btn.style.opacity = '0.5';
+
+            try {
+                const isLocalhost = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname || window.location.protocol === 'file:');
+                const isCapacitor = typeof window !== 'undefined' && (window.Capacitor || window.location.protocol === 'capacitor:');
+                const API_URL = (isLocalhost && !isCapacitor)
+                    ? 'http://localhost:3050/api'
+                    : 'https://voxachat-jbyj.onrender.com/api';
+                const res = await fetch(`${API_URL}/auth/activate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('Network ID Reactivated! Initializing Connection...');
+                    localStorage.setItem('voxa_token', data.token);
+                    
+                    const userObj = {
+                        username: data.username,
+                        email: email,
+                        rank: data.rank || 'N/A'
+                    };
+                    localStorage.setItem('voxa_user', JSON.stringify(userObj));
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showToast(data.error || 'Activation failed', true);
+                    btn.innerText = 'ACTIVATE VOXA SERVER';
+                    btn.style.opacity = '1';
+                }
+            } catch (error) {
+                console.error('Activation Error:', error);
+                showToast('Connection failed. Server offline.', true);
+                btn.innerText = 'ACTIVATE VOXA SERVER';
+                btn.style.opacity = '1';
+            }
+        });
+    </script>
+</body>
+</html>

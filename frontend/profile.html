@@ -133,6 +133,34 @@
             color: var(--primary-color);
             overflow: hidden;
             object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .avatar-img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Text Size Slider */
+        .text-size-slider-wrap {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .text-size-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+        .text-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--primary-color);
         }
 
         .add-avatar-btn {
@@ -475,7 +503,12 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </div>
             </div>
-            <div class="rank-text" id="userRankText">#...</div>
+            <div class="rank-display" style="display: flex; justify-content: center; margin-top: 15px;">
+                <div id="userRankBox" style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(0,0,0,0.9)); border: 1px solid rgba(255,255,255,0.25); padding: 6px 16px; border-radius: 12px; font-size: 18px; font-family: 'Inter', monospace; color: #fff; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 0 0 12px rgba(255,255,255,0.05); letter-spacing: 1px;">...</div>
+            </div>
+            <div id="bestGameDisplay" style="margin-top: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-secondary); background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: none;">
+                Best Game: <span id="bestGameName" style="color: var(--primary-color); font-weight: 800;">NONE</span>
+            </div>
         </div>
 
         <div class="settings-group">
@@ -493,6 +526,16 @@
                     <div class="theme-circle" style="background: #00ff88;" onclick="setTheme('#00ff88', '#0099ff')"></div>
                     <div class="theme-circle" style="background: #7000ff;" onclick="setTheme('#7000ff', '#00e5ff')"></div>
                     <div class="add-theme-btn" id="openMachineBtn">+</div>
+                </div>
+
+                <!-- Text Size Adjuster -->
+                <div class="text-size-slider-wrap">
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 800;">
+                        <span>A-</span>
+                        <span style="color: var(--primary-color);">FONT SCALE</span>
+                        <span>A+</span>
+                    </div>
+                    <input type="range" min="12" max="22" value="16" class="text-size-slider" id="textSizeSlider">
                 </div>
 
                 <!-- Custom Color Machine -->
@@ -542,6 +585,48 @@
         </div>
 
         <div class="settings-group">
+            <div class="group-label" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 10px; background: rgba(0, 229, 255, 0.05); border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.1);" onclick="toggleSocial()">
+                <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 3px; color: var(--primary-color); font-weight: 600;">Social Connections</span>
+                <span id="socialToggleIcon" style="color: var(--primary-color);">+</span>
+            </div>
+            <div id="socialDropdown" style="display: none; margin-top: 15px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 15px;">
+                <!-- Social logic injected by JS -->
+                <div style="display:flex; flex-direction:column; gap:10px;" id="socialList"></div>
+            </div>
+        </div>
+
+        <div class="settings-group" id="gamingGroup" style="position: relative;">
+            <div style="position: relative; z-index: 2;">
+                <div class="group-label">Gaming Identity</div>
+                <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                    <div class="setting-info" style="margin-bottom: 15px;">
+                        <div class="setting-label">Select Best Game</div>
+                    </div>
+                    <select id="bestGameSelect" style="width: 100%; padding: 12px; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-family: 'Inter', sans-serif; outline: none; background-size: cover; background-position: center; transition: background-image 0.3s ease;" onchange="saveBestGame()">
+                        <option value="" style="background: #0b0d17;">No Main Game</option>
+                        <!-- Mobile Section -->
+                        <option value="free-fire.png" style="background: #0b0d17;">Free Fire</option>
+                        <option value="pubg.png" style="background: #0b0d17;">PUBG Mobile</option>
+                        <option value="cod-mobile.png" style="background: #0b0d17;">COD Mobile</option>
+                        <option value="efootball.png" style="background: #0b0d17;">eFootball</option>
+                        <option value="delta-force.png" style="background: #0b0d17;">Delta Force</option>
+                        <option value="lost-light.png" style="background: #0b0d17;">Lost Light</option>
+                        <option value="blood-strike.png" style="background: #0b0d17;">Blood Strike</option>
+                        <option value="warzone-mobile.png" style="background: #0b0d17;">Warzone Mobile</option>
+                        <!-- PC / PlayStation Section -->
+                        <option value="asotime.png" style="background: #0b0d17;">Asotime RP</option>
+                        <option value="mortal-kombat.png" style="background: #0b0d17;">Mortal Kombat</option>
+                        <option value="cod-warzone.png" style="background: #0b0d17;">COD Warzone</option>
+                        <option value="roblox.png" style="background: #0b0d17;">Roblox</option>
+                        <option value="valorant.png" style="background: #0b0d17;">Valorant</option>
+                        <option value="apex-legends.png" style="background: #0b0d17;">Apex Legends</option>
+                        <option value="fortnite.png" style="background: #0b0d17;">Fortnite</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-group">
             <div class="group-label">Network Identity</div>
             <div class="setting-item">
                 <div class="setting-info">
@@ -556,7 +641,10 @@
             </div>
         </div>
 
-        <button class="btn-logout" id="logoutBtn">LOGOUT</button>
+        <div style="display: flex; gap: 12px; margin-top: 30px; margin-bottom: 50px; width: 100%;">
+            <button id="logoutBtn" style="flex: 1; padding: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: #a0a5b5; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">LOGOUT</button>
+            <button id="deactivateBtn" style="flex: 1; padding: 14px; background: rgba(255, 51, 102, 0.05); border: 1px solid rgba(255, 51, 102, 0.2); border-radius: 12px; color: #ff3366; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">DEACTIVATE</button>
+        </div>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
@@ -576,7 +664,28 @@
                 <div class="char-option" onclick="updateAvatar('https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Raven&backgroundColor=0b0d17')"><img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Raven&backgroundColor=0b0d17"></div>
             </div>
             <div class="upload-btn" id="galleryBtn">UPLOAD FROM GALLERY</div>
+            <input type="file" id="galleryInput" style="display: none;" accept="image/*">
             <div style="text-align: center; margin-top: 15px; color: var(--text-secondary); cursor: pointer;" onclick="document.getElementById('avatarModal').classList.remove('active')">CANCEL</div>
+        </div>
+    </div>
+
+    <!-- Deactivate Modal -->
+    <div class="modal" id="deactivateModal">
+        <div class="modal-content" style="text-align: center; border-color: #ff3366;">
+            <h2 style="color: #ff3366; margin-top: 0;">DEACTIVATE ACCOUNT</h2>
+            <p style="color: var(--text-secondary); font-size: 14px; margin: 20px 0;">This will safely deactivate your profile. You can reactivate and restore your account at any time simply by logging back in.</p>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="document.getElementById('deactivateModal').classList.remove('active')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: none; border-radius: 10px; color: white; cursor: pointer;">CANCEL</button>
+                <button id="confirmDeactivateBtn" style="flex: 1; padding: 12px; background: #ff3366; border: none; border-radius: 10px; color: #0b0d17; font-weight: 800; cursor: pointer;">DEACTIVATE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Lightbox Modal -->
+    <div class="modal" id="avatarFullModal" style="z-index: 3000; background: rgba(0,0,0,0.95);" onclick="this.classList.remove('active')">
+        <div style="max-width: 90vw; max-height: 90vh; position: relative;">
+            <img id="avatarFullImg" src="" style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 0 50px rgba(0,229,255,0.3);">
+            <div style="position: absolute; top: -40px; right: 0; color: white; font-weight: 800; font-size: 24px; cursor: pointer;">&times;</div>
         </div>
     </div>
 
@@ -595,7 +704,7 @@
 
     <script>
         const userData = JSON.parse(localStorage.getItem('voxa_user'));
-        const botSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+        const botSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
         // SECURITY LOCK PROTOCOL
         const securityLock = document.getElementById('securityLock');
@@ -608,23 +717,31 @@
             
             unlockBtn.onclick = async () => {
                 if (window.PublicKeyCredential) {
-                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-                    if (available) {
-                        try {
-                            const challenge = new Uint8Array(32);
-                            window.crypto.getRandomValues(challenge);
-                            securityLock.classList.remove('active');
-                            setTimeout(() => securityLock.style.display = 'none', 300);
-                        } catch (err) {
-                            showToast('Identity verification failed.');
-                        }
-                    } else {
+                    try {
+                        const challenge = new Uint8Array(32);
+                        window.crypto.getRandomValues(challenge);
+                        
+                        // Use native WebAuthn to prompt user verification (fingerprint/password)
+                        // This cleanly triggers the OS-level prompt
+                        const options = {
+                            challenge: challenge,
+                            userVerification: "required"
+                        };
+                        
+                        await navigator.credentials.get({ publicKey: options });
+                        
                         securityLock.classList.remove('active');
                         setTimeout(() => securityLock.style.display = 'none', 300);
+                        showToast('Identity Verified');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Biometric was not enabled, kindly go to your settings.');
                     }
                 } else {
+                    // Fallback if WebAuthn not supported
                     securityLock.classList.remove('active');
                     setTimeout(() => securityLock.style.display = 'none', 300);
+                    showToast('Security bypassed (WebAuthn not supported)');
                 }
             };
         }
@@ -635,14 +752,59 @@
             toast.className = 'toast';
             toast.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> ${msg}`;
             container.appendChild(toast);
-            botSound.play();
+            
+            if (typeof notifsArmed !== 'undefined' ? notifsArmed : localStorage.getItem('voxa_notifs') !== 'false') {
+                botSound.currentTime = 0;
+                botSound.play().catch(e => console.log('Audio playback prevented by browser'));
+            }
+            
             setTimeout(() => toast.remove(), 3000);
         }
 
         function refreshUI() {
             if (!userData) { window.location.href = 'login.html'; return; }
             document.getElementById('userName').innerText = userData.username;
-            document.getElementById('userRankText').innerText = `#${userData.rank}`;
+            
+            // Gaming Rank Logic
+            const rankBox = document.getElementById('userRankBox');
+            let userRank = parseInt(userData.rank) || 999;
+            let rankName = 'BRONZE';
+            let tierColor = '#cd7f32'; // Bronze
+            let isMythic = false;
+            
+            if (userRank <= 10) { rankName = '👑 MYTHIC'; tierColor = '#ff3366'; isMythic = true; }
+            else if (userRank <= 50) { rankName = 'GRANDMASTER'; tierColor = '#ff00ff'; }
+            else if (userRank <= 100) { rankName = 'MASTER'; tierColor = '#9932cc'; }
+            else if (userRank <= 500) { rankName = 'DIAMOND'; tierColor = '#00e5ff'; }
+            else if (userRank <= 1000) { rankName = 'PLATINUM'; tierColor = '#00ff88'; }
+            else if (userRank <= 5000) { rankName = 'GOLD'; tierColor = '#FFD700'; }
+            else if (userRank <= 10000) { rankName = 'SILVER'; tierColor = '#c0c0c0'; }
+
+            rankBox.innerText = rankName + ' #' + userRank;
+            rankBox.style.borderColor = tierColor;
+            rankBox.style.color = tierColor;
+            if (isMythic) {
+                rankBox.style.boxShadow = `0 0 20px ${tierColor}, inset 0 0 15px ${tierColor}88`;
+                rankBox.style.textShadow = `0 0 10px ${tierColor}, 0 0 20px #fff`;
+                rankBox.style.background = `linear-gradient(135deg, rgba(255,51,102,0.3), rgba(0,0,0,0.9))`;
+            } else {
+                rankBox.style.boxShadow = `0 5px 15px rgba(0,0,0,0.6), inset 0 0 12px ${tierColor}44`;
+                rankBox.style.textShadow = 'none';
+                rankBox.style.background = `linear-gradient(135deg, rgba(255,255,255,0.15), rgba(0,0,0,0.9))`;
+            }
+
+            // Game
+            const sel = document.getElementById('bestGameSelect');
+            if (userData.bestGame) {
+                document.getElementById('bestGameDisplay').style.display = 'inline-block';
+                sel.value = userData.bestGame;
+                document.getElementById('bestGameName').innerText = sel.options[sel.selectedIndex].text;
+                sel.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('assets/${userData.bestGame}')`;
+            } else {
+                document.getElementById('bestGameDisplay').style.display = 'none';
+                sel.style.backgroundImage = 'none';
+            }
+
             document.getElementById('valEmail').innerText = userData.email;
             
             const avatarEl = document.getElementById('userAvatar');
@@ -651,25 +813,239 @@
             } else {
                 avatarEl.innerText = userData.username.charAt(0).toUpperCase();
             }
+            renderSocials();
         }
+        
+        // Social Logic
+        function toggleSocial() {
+            const dropdown = document.getElementById('socialDropdown');
+            const icon = document.getElementById('socialToggleIcon');
+            if (dropdown.style.display === 'none') {
+                dropdown.style.display = 'block';
+                icon.innerText = '-';
+            } else {
+                dropdown.style.display = 'none';
+                icon.innerText = '+';
+            }
+        }
+
+        function renderSocials() {
+            const list = document.getElementById('socialList');
+            
+            const platforms = [
+                { name: 'X / Twitter', id: 'twitter', urlBase: 'https://twitter.com/', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>' },
+                { name: 'Instagram', id: 'instagram', urlBase: 'https://instagram.com/', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>' },
+                { name: 'Discord', id: 'discord', urlBase: 'https://discord.com/users/', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>' },
+                { name: 'YouTube', id: 'youtube', urlBase: 'https://youtube.com/@', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>' }
+            ];
+            
+            let html = '';
+            platforms.forEach(p => {
+                const val = (userData.socials && userData.socials[p.id]) ? userData.socials[p.id] : '';
+                const isSaved = !!val;
+                
+                html += `
+                    <div class="setting-item">
+                        <div class="setting-info" style="flex: 1;">
+                            <div class="setting-icon">
+                                ${p.icon}
+                            </div>
+                            <div class="setting-details" style="flex: 1; padding-right: 15px;">
+                                <div class="setting-label">${p.name}</div>
+                                <input type="url" id="soc_${p.id}" placeholder="${p.urlBase}" value="${val}" ${isSaved ? 'readonly' : ''} style="width: 100%; background: transparent; border: none; color: ${isSaved ? 'var(--text-secondary)' : 'white'}; font-family: 'Inter'; outline: none; margin-top: 5px; font-size: 13px; border-bottom: ${isSaved ? 'none' : '1px solid rgba(255,255,255,0.1)'}; padding-bottom: 5px;" onchange="saveSocial('${p.id}', this.value)">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap: 5px; align-items: center;">
+                            ${isSaved ? `
+                                <button onclick="openSocial('${p.id}')" id="actionBtn_${p.id}" style="padding: 8px 12px; background: var(--primary-color); border: none; border-radius: 8px; color: #0b0d17; font-weight: 800; cursor: pointer; font-size: 10px;">OPEN</button>
+                                <button onclick="editSocial('${p.id}')" style="padding: 8px 12px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: white; font-weight: 800; cursor: pointer; font-size: 10px;">EDIT</button>
+                            ` : `
+                                <button onclick="handleSaveSocial('${p.id}', '${p.urlBase}')" id="actionBtn_${p.id}" style="padding: 8px 12px; background: rgba(0, 229, 255, 0.2); border: 1px solid var(--primary-color); border-radius: 8px; color: var(--primary-color); font-weight: 800; cursor: pointer; font-size: 10px;">SAVE</button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        window.openSocial = function(id) {
+            const input = document.getElementById('soc_' + id);
+            if (input.value) window.open(input.value, '_blank');
+        };
+
+        window.editSocial = function(id) {
+            const input = document.getElementById('soc_' + id);
+            input.readOnly = false;
+            input.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+            input.style.color = 'white';
+            input.focus();
+            
+            const container = input.parentElement.parentElement.nextElementSibling;
+            container.innerHTML = `<button onclick="handleSaveSocial('${id}', '${document.getElementById('soc_'+id).placeholder}')" style="padding: 8px 12px; background: rgba(0, 229, 255, 0.2); border: 1px solid var(--primary-color); border-radius: 8px; color: var(--primary-color); font-weight: 800; cursor: pointer; font-size: 10px;">SAVE</button>`;
+        };
+
+        window.handleSaveSocial = function(platform, urlBase) {
+            let value = document.getElementById('soc_' + platform).value.trim();
+            if (!value) return;
+            
+            if (!value.startsWith('http://') && !value.startsWith('https://')) {
+                value = (urlBase || 'https://') + value;
+            }
+            
+            saveSocial(platform, value);
+            renderSocials(); 
+        };
+
+        function saveSocial(platform, value) {
+            if (!userData.socials) userData.socials = {};
+            userData.socials[platform] = value;
+            localStorage.setItem('voxa_user', JSON.stringify(userData));
+            showToast(platform.toUpperCase() + ' Link Synced. Visible on public profile.');
+            syncProfileWithDatabase();
+        }
+
+        function saveBestGame() {
+            const val = document.getElementById('bestGameSelect').value;
+            userData.bestGame = val;
+            localStorage.setItem('voxa_user', JSON.stringify(userData));
+            refreshUI();
+            showToast('Gaming Identity Updated. Visible on public profile.');
+            syncProfileWithDatabase();
+        }
+
+        async function syncProfileWithDatabase() {
+            const token = localStorage.getItem('voxa_token') || (userData && userData.token);
+            if (!token) return;
+            const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname || window.location.protocol === 'file:');
+            const isCap = typeof window !== 'undefined' && (window.Capacitor || window.location.protocol === 'capacitor:');
+            const API_URL = (isLocal && !isCap)
+                ? 'http://localhost:3050/api'
+                : 'https://voxachat-jbyj.onrender.com/api';
+            try {
+                await fetch(`${API_URL}/profile/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        avatar: userData.avatar,
+                        bestGame: userData.bestGame,
+                        socialLinks: userData.socials
+                    })
+                });
+            } catch (e) {
+                console.error('Failed to sync to database', e);
+            }
+        }
+
         refreshUI();
 
         // Copy Username
         document.getElementById('copyUsername').onclick = () => {
-            navigator.clipboard.writeText(userData.username);
-            showToast('Callsign Secured');
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(userData.username).then(() => {
+                    showToast('Callsign Secured');
+                }).catch(() => fallbackCopy(userData.username));
+            } else {
+                fallbackCopy(userData.username);
+            }
         };
+
+        function fallbackCopy(text) {
+            try {
+                const el = document.createElement('textarea');
+                el.value = text;
+                el.style.position = 'absolute';
+                el.style.left = '-9999px';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                showToast('Callsign Secured');
+            } catch (e) {
+                console.error(e);
+                showToast('Clipboard access denied by browser');
+            }
+        }
 
         // Modal
         document.getElementById('addAvatarBtn').onclick = () => document.getElementById('avatarModal').classList.add('active');
         
+        // Avatar Full Lightbox
+        document.getElementById('userAvatar').onclick = () => {
+            if (userData.avatar && (userData.avatar.startsWith('data:image') || userData.avatar.startsWith('http'))) {
+                document.getElementById('avatarFullImg').src = userData.avatar;
+                document.getElementById('avatarFullModal').classList.add('active');
+            }
+        };
+
+        // Gallery Upload
+        const galleryBtn = document.getElementById('galleryBtn');
+        const galleryInput = document.getElementById('galleryInput');
+        galleryBtn.onclick = () => galleryInput.click();
+        galleryInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    updateAvatar(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
         function updateAvatar(newUrl) {
             userData.avatar = newUrl;
             localStorage.setItem('voxa_user', JSON.stringify(userData));
             document.getElementById('avatarModal').classList.remove('active');
             refreshUI();
-            showToast('Avatar Synced');
+            showToast('Avatar Synced. Visible on public profile.');
+            syncProfileWithDatabase();
         }
+
+        // Deactivate Logic
+        document.getElementById('deactivateBtn').onclick = () => {
+            document.getElementById('deactivateModal').classList.add('active');
+        };
+        document.getElementById('confirmDeactivateBtn').onclick = async () => {
+            const token = localStorage.getItem('voxa_token') || (userData && userData.token);
+            const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname || window.location.protocol === 'file:');
+            const isCap = typeof window !== 'undefined' && (window.Capacitor || window.location.protocol === 'capacitor:');
+            const API_URL = (isLocal && !isCap)
+                ? 'http://localhost:3050/api'
+                : 'https://voxachat-jbyj.onrender.com/api';
+            try {
+                // Trigger backend deactivation email if token exists
+                if (token) {
+                    await fetch(`${API_URL}/auth/deactivate`, {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                }
+            } catch (e) {
+                console.log('Deactivation API not reachable');
+            }
+            
+            showToast('Account Deactivated. Sending Protocol Email...');
+            setTimeout(() => {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }, 1500);
+        };
+
+        // Text Size Adjuster
+        const textSizeSlider = document.getElementById('textSizeSlider');
+        const savedSize = localStorage.getItem('voxa_text_size');
+        if (savedSize) {
+            document.body.style.fontSize = savedSize + 'px';
+            textSizeSlider.value = savedSize;
+        }
+        textSizeSlider.addEventListener('input', (e) => {
+            document.body.style.fontSize = e.target.value + 'px';
+            localStorage.setItem('voxa_text_size', e.target.value);
+        });
 
         // AI Color Engine
         const machineBtn = document.getElementById('openMachineBtn');
@@ -720,31 +1096,42 @@
                 return;
             }
 
-            // Check for Biometric Support
             if (window.PublicKeyCredential) {
-                const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-                if (available) {
-                    try {
-                        // Dummy verification request to trigger device prompt
-                        const challenge = new Uint8Array(32);
-                        window.crypto.getRandomValues(challenge);
-                        
-                        // Note: A real implementation would require a server-side challenge
-                        // Here we simulate the trigger of the biometric prompt
-                        showToast('Verifying Identity...');
-                        
-                        lockEnabled = true;
-                        localStorage.setItem('voxa_lock', 'true');
-                        updateLockUI();
-                        showToast('App Lock Armed');
-                    } catch (err) {
-                        showToast('Authentication Failed');
-                    }
-                } else {
-                    showToast('Biometrics not detected. Check system settings.');
+                try {
+                    const challenge = new Uint8Array(32);
+                    window.crypto.getRandomValues(challenge);
+                    
+                    showToast('Verifying Identity...');
+                    
+                    // Create dummy credential to natively prompt OS biometric/password
+                    const options = {
+                        challenge: challenge,
+                        rp: { name: "Voxa Console" },
+                        user: {
+                            id: window.crypto.getRandomValues(new Uint8Array(16)),
+                            name: userData ? userData.username : "operator",
+                            displayName: userData ? userData.username : "Operator"
+                        },
+                        pubKeyCredParams: [{alg: -7, type: "public-key"}],
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform",
+                            userVerification: "required"
+                        },
+                        timeout: 60000
+                    };
+
+                    await navigator.credentials.create({ publicKey: options });
+                    
+                    lockEnabled = true;
+                    localStorage.setItem('voxa_lock', 'true');
+                    updateLockUI();
+                    showToast('App Lock Armed');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Biometric was not enabled, kindly go to your settings.');
                 }
             } else {
-                showToast('Biometric security not supported on this device.');
+                showToast('WebAuthn not supported on this device.');
             }
         };
 
@@ -754,12 +1141,20 @@
         // Notifications
         const notifBtn = document.getElementById('notifBtn');
         const notifStatus = document.getElementById('notifStatus');
-        let notifsArmed = true;
+        
+        // Restore saved preference or default to true
+        let notifsArmed = localStorage.getItem('voxa_notifs') !== 'false';
+
+        function updateNotifUI() {
+            notifBtn.innerText = notifsArmed ? 'DISARM ALERTS' : 'ARM ALERTS';
+            notifStatus.innerText = notifsArmed ? 'Audio alerts active' : 'Audio alerts offline';
+        }
+        updateNotifUI(); // init on load
 
         notifBtn.onclick = () => {
             notifsArmed = !notifsArmed;
-            notifBtn.innerText = notifsArmed ? 'ARM ALERTS' : 'DISARM ALERTS';
-            notifStatus.innerText = notifsArmed ? 'Audio alerts active' : 'Audio alerts offline';
+            localStorage.setItem('voxa_notifs', notifsArmed ? 'true' : 'false');
+            updateNotifUI();
             showToast(notifsArmed ? 'Alerts Armed' : 'Alerts Offline');
         };
 

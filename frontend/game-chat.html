@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxa Server | Game Chat Lobby</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00e5ff;
+            --primary-glow: rgba(0, 229, 255, 0.4);
+            --bg-dark: #0b0d17;
+            --card-bg: rgba(26, 28, 41, 0.45);
+            --border-color: rgba(0, 229, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a5b5;
+            --accent-orange: #ff6d00;
+            --accent-green: #39ff14;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: stretch;
+            align-items: stretch;
+            position: relative;
+        }
+
+        /* Ambient Game Background - Crisp Game Picture */
+        .ambient-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.35); /* Darken slightly for optimal text contrast */
+            transform: scale(1);
+            transition: background-image 0.5s ease;
+            z-index: 1;
+        }
+
+        /* Persistent Grid Overlay */
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Main Chat Container - Native Full Bleed Layout */
+        .chat-portal {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 13, 23, 0.65); /* Translucent dark tint for clear readability */
+            border: none;
+            border-radius: 0px;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-grow: 1;
+            animation: portalEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes portalEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Header Style */
+        .chat-header {
+            padding: 16px 20px;
+            padding-top: calc(env(safe-area-inset-top, 0px) + 24px); /* Pushes content down below simulator Island/Notch */
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(11, 13, 23, 0.85); /* Slightly darker for better header isolation */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Top Header Call Button */
+        .header-call-btn {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px rgba(0, 229, 255, 0.1);
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .header-call-btn:hover {
+            background: var(--primary-color);
+            color: #111;
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: scale(1.05);
+        }
+
+        .header-call-btn.voice-active {
+            background: #ff3366 !important;
+            border-color: #ff3366 !important;
+            color: #fff !important;
+            animation: pulseGlowRed 1.2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlowRed {
+            0% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 51, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); }
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .game-status-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .game-avatar-frame {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #000;
+            padding: 1px;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+        }
+
+        .game-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .game-avatar-frame::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            border: 2px solid #111;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .game-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-name {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .game-status {
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 6px var(--accent-green);
+        }
+
+        .lobby-stats {
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 90px;
+        }
+
+        .active-count {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1.1;
+        }
+
+        .active-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* Message Display Area */
+        .chat-body {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .chat-body::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+
+        /* Message Balloon Styles */
+        .message-row {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+            animation: msgFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes msgFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-row.incoming {
+            align-self: flex-start;
+        }
+
+        .message-row.outgoing {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            object-fit: cover;
+        }
+
+        .message-content-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sender-username {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .message-row.outgoing .sender-username {
+            color: var(--accent-orange);
+            text-align: right;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message-row.incoming .message-bubble {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border-top-left-radius: 4px;
+        }
+
+        .message-row.outgoing .message-bubble {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            color: #fff;
+            border-top-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.05);
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 2px;
+            align-self: flex-end;
+        }
+
+        .message-row.outgoing .message-time {
+            align-self: flex-start;
+        }
+
+        /* Voice Message Bubble */
+        .voice-bubble {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 180px;
+        }
+
+        .voice-play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .voice-play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .voice-wave {
+            flex-grow: 1;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            gap: 2.5px;
+        }
+
+        .voice-bar {
+            flex-grow: 1;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            transition: background-color 0.2s;
+        }
+
+        .message-row.outgoing .voice-bar {
+            background: rgba(0, 229, 255, 0.3);
+        }
+
+        .voice-bar.active {
+            background: var(--primary-color) !important;
+            animation: waveBounce 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes waveBounce {
+            from { height: 30%; }
+            to { height: 100%; }
+        }
+
+        .voice-duration {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Bottom Input Dock */
+        .input-dock {
+            padding: 16px 20px;
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); /* Account for home indicators/round corners */
+            border-top: 1px solid var(--border-color);
+            background: rgba(11, 13, 23, 0.85);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-icon-btn.voice-active {
+            background: rgba(0, 229, 255, 0.15) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--primary-color) !important;
+            animation: pulseGlow 1.2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+        }
+
+        .message-input-wrapper {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input {
+            width: 100%;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 0 45px 0 16px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 13.5px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 8px;
+            background: transparent;
+            border: none;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: transform 0.2s;
+            opacity: 0.7;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        /* Voice Streaming Overlay (Micro-Animation) */
+        .voice-streaming-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 13, 23, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            border-radius: 0px;
+        }
+
+        .voice-streaming-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .voice-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(0, 229, 255, 0.1);
+            border: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            margin-bottom: 24px;
+            animation: voiceRing 1.6s infinite ease-out;
+        }
+
+        @keyframes voiceRing {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4), inset 0 0 0 0 rgba(0, 229, 255, 0.2);
+            }
+            100% {
+                box-shadow: 0 0 0 35px rgba(0, 229, 255, 0), inset 0 0 15px 5px rgba(0, 229, 255, 0.1);
+            }
+        }
+
+        .voice-stream-title {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .voice-stream-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .voice-stop-btn {
+            background: #ff3366;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 20px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(255, 51, 102, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .voice-stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(255, 51, 102, 0.4);
+        }
+
+        /* Mobile-Responsive Optimizations */
+        @media (max-width: 480px) {
+            .chat-header {
+                padding: 12px 14px;
+                padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+                gap: 8px;
+            }
+            .back-btn {
+                width: 32px;
+                height: 32px;
+            }
+            .header-call-btn {
+                width: 32px;
+                height: 32px;
+            }
+            .game-avatar-frame {
+                width: 36px;
+                height: 36px;
+            }
+            .game-name {
+                font-size: 13.5px;
+            }
+            .game-status {
+                font-size: 9.5px;
+            }
+            .lobby-stats {
+                min-width: 75px;
+                padding: 4px 8px;
+                border-radius: 8px;
+            }
+            .active-count {
+                font-size: 11.5px;
+            }
+            .active-label {
+                font-size: 8px;
+            }
+            .chat-body {
+                padding: 12px;
+                gap: 12px;
+            }
+            .message-row {
+                max-width: 92%;
+                gap: 8px;
+            }
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+            }
+            .message-bubble {
+                padding: 10px 12px;
+                font-size: 12.5px;
+                border-radius: 14px;
+            }
+            .sender-username {
+                font-size: 10px;
+            }
+            .input-dock {
+                padding: 10px 12px;
+                padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+                gap: 8px;
+            }
+            .action-icon-btn {
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+            }
+            .chat-input {
+                height: 38px;
+                padding: 0 36px 0 12px;
+                font-size: 12.5px;
+                border-radius: 10px;
+            }
+            .send-btn {
+                right: 6px;
+                width: 28px;
+                height: 28px;
+            }
+            .chat-attached-image {
+                max-width: 160px !important;
+                max-height: 160px !important;
+            }
+        }
+
+        /* Bottom Sheet Styling */
+        .bottom-sheet-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bottom-sheet-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            background: rgba(26, 28, 41, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 24px 24px 0 0;
+            padding: 16px 20px 40px 20px;
+            z-index: 10000;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+        .sheet-handle {
+            width: 40px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        .sheet-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .sheet-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .sheet-grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .sheet-icon-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+        .sheet-grid-item:hover .sheet-icon-wrap {
+            transform: scale(1.1);
+        }
+        .sheet-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Embedded Audio Node */
+        #sendSound, #recvSound {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Blurred Ambient Graphic -->
+    <div class="ambient-bg" id="ambientBg"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Chat Lobby Panel -->
+    <div class="chat-portal">
+        <header class="chat-header">
+            <a href="server-dashboard.html" class="back-btn" title="Back to Server Portal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+
+            <div class="game-status-wrap">
+                <div class="game-avatar-frame">
+                    <img id="gameIcon" src="assets/free-fire.png" class="game-avatar" alt="Lobby Avatar">
+                </div>
+                <div class="game-info">
+                    <span id="lobbyTitle" class="game-name">Free Fire</span>
+                    <span class="game-status">
+                        Server Cluster Active
+                    </span>
+                </div>
+            </div>
+
+            <div class="lobby-stats" id="operatorCount">
+                <span class="active-count">0</span>
+                <span class="active-label">Active Members</span>
+            </div>
+            
+            <!-- Voice Call Header Button -->
+            <button class="header-call-btn" onclick="toggleVoiceStreaming()" title="Voice Call">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Message List -->
+        <div class="chat-body" id="chatBody">
+            <!-- Incoming Mock Message -->
+            <div class="message-row incoming">
+                <img src="https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=100&h=100&q=80" class="user-avatar" alt="User avatar">
+                <div class="message-content-wrap">
+                    <span class="sender-username">Ghost_Operator</span>
+                    <div class="message-bubble">
+                        Hey squad, anyone down for a Rank Rush right now? Add me: GhostOp#7721. Need mic!
+                    </div>
+                    <span class="message-time">10:42 PM</span>
+                </div>
+            </div>
+
+            <!-- Incoming Voice Message -->
+            <div class="message-row incoming">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&h=100&q=80" class="user-avatar" alt="User avatar">
+                <div class="message-content-wrap">
+                    <span class="sender-username">Valkyrie_FF</span>
+                    <div class="message-bubble">
+                        <div class="voice-bubble">
+                            <button class="voice-play-btn" onclick="playVoice(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            </button>
+                            <div class="voice-wave">
+                                <div class="voice-bar" style="height: 40%"></div>
+                                <div class="voice-bar" style="height: 80%"></div>
+                                <div class="voice-bar" style="height: 55%"></div>
+                                <div class="voice-bar" style="height: 90%"></div>
+                                <div class="voice-bar" style="height: 35%"></div>
+                                <div class="voice-bar" style="height: 70%"></div>
+                                <div class="voice-bar" style="height: 45%"></div>
+                            </div>
+                            <span class="voice-duration">0:08</span>
+                        </div>
+                    </div>
+                    <span class="message-time">10:43 PM</span>
+                </div>
+            </div>
+
+            <!-- Incoming Mock Message -->
+            <div class="message-row incoming">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80" class="user-avatar" alt="User avatar">
+                <div class="message-content-wrap">
+                    <span class="sender-username">ShadowStriker</span>
+                    <div class="message-bubble">
+                        I just shared my room codes in the lobby channel! Let's get it. 🎮🔥
+                    </div>
+                    <span class="message-time">10:45 PM</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Bar Area -->
+        <footer class="input-dock">
+            <!-- Camera Quick Action -->
+            <button class="action-icon-btn" onclick="openMockCamera()" title="Capture Screenshot/Photo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            </button>
+
+            <!-- Attachment Quick Action -->
+            <button class="action-icon-btn" onclick="openMockAttachment()" title="Attach File/Media">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(45)"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+            </button>
+
+            <!-- Text Input Wrapper -->
+            <form class="message-input-wrapper" id="chatForm">
+                <!-- Placeholder text set dynamically to game name e.g. "Free Fire" -->
+                <input type="text" class="chat-input" id="messageInput" placeholder="Free Fire" autocomplete="off" required>
+                
+                <button type="submit" class="send-btn" title="Send Message">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </form>
+
+            <!-- Voice Chat Action -->
+            <button class="action-icon-btn" id="voiceChatBtn" onclick="toggleVoiceStreaming()" title="Initiate Voice Chat Stream">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            </button>
+        </footer>
+
+        <!-- Voice Chat Modal HUD -->
+        <div class="voice-streaming-modal" id="voiceModal">
+            <div class="voice-circle">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            </div>
+            <div class="voice-stream-title" id="voiceStreamTitle">Voice Streaming</div>
+            <div class="voice-stream-subtitle">Broadcasting audio stream to gaming cluster...</div>
+            <button class="voice-stop-btn" onclick="toggleVoiceStreaming()">Disconnect Channel</button>
+        </div>
+    </div>
+
+    <!-- Interface Sounds -->
+    <audio id="sendSound" src="https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav" preload="auto"></audio>
+    <audio id="recvSound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-84.wav" preload="auto"></audio>
+
+    <script>
+        // Extract URL Parameters for Game Identification
+        const params = new URLSearchParams(window.location.search);
+        const gameName = params.get('game') || 'Free Fire';
+        const gameIcon = params.get('icon') || 'free-fire.png';
+
+        // Load Active Profile/User Name
+        const userData = JSON.parse(localStorage.getItem('voxa_user') || '{}');
+        const savedUser = userData.username || 'OPERATOR';
+
+        // DOM elements binding
+        const ambientBg = document.getElementById('ambientBg');
+        const gameIconEl = document.getElementById('gameIcon');
+        const lobbyTitle = document.getElementById('lobbyTitle');
+        const messageInput = document.getElementById('messageInput');
+        const chatBody = document.getElementById('chatBody');
+        const chatForm = document.getElementById('chatForm');
+        const voiceModal = document.getElementById('voiceModal');
+        const voiceChatBtn = document.getElementById('voiceChatBtn');
+        const sendSound = document.getElementById('sendSound');
+        const recvSound = document.getElementById('recvSound');
+        const operatorCount = document.getElementById('operatorCount');
+
+        // Dynamic Loading of Game Attributes
+        document.title = `Voxa Server | ${gameName} Lobby`;
+        lobbyTitle.innerText = gameName;
+        gameIconEl.src = `assets/${gameIcon}`;
+        gameIconEl.alt = gameName;
+        
+        // Background Free Fire (or custom game) Ambient image loading
+        ambientBg.style.backgroundImage = `url('assets/${gameIcon}')`;
+        
+        // Set placeholder exactly to game name
+        messageInput.placeholder = gameName;
+
+        // Unique user identification to avoid collision in online list
+        let sessionUser = userData.username;
+        if (!sessionUser) {
+            // Generate a persistent random ID for this session to distinguish tabs
+            sessionUser = sessionStorage.getItem('voxa_session_user');
+            if (!sessionUser) {
+                sessionUser = 'Operator_' + Math.floor(100 + Math.random() * 900);
+                sessionStorage.setItem('voxa_session_user', sessionUser);
+            }
+        }
+
+        const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname || window.location.protocol === 'file:');
+        const isCap = typeof window !== 'undefined' && (window.Capacitor || window.location.protocol === 'capacitor:');
+        const API_URL = (isLocal && !isCap)
+            ? 'http://localhost:3050/api'
+            : 'https://voxachat-jbyj.onrender.com/api';
+
+        async function sendHeartbeat() {
+            try {
+                const response = await fetch(`${API_URL}/lobby/heartbeat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameName, username: sessionUser })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const count = data.activeCount;
+                    const label = count === 1 ? 'Active Member' : 'Active Members';
+                    operatorCount.innerHTML = `
+                        <span class="active-count">${count}</span>
+                        <span class="active-label">${label}</span>
+                    `;
+                }
+            } catch (err) {
+                console.error("Failed to fetch lobby active count:", err);
+            }
+        }
+
+        async function leaveLobby() {
+            try {
+                await fetch(`${API_URL}/lobby/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameName, username: sessionUser }),
+                    keepalive: true
+                });
+            } catch (err) {
+                console.error("Failed to send leave signal:", err);
+            }
+        }
+
+        // Send immediately on load, then every 1 second
+        sendHeartbeat();
+        setInterval(sendHeartbeat, 1000);
+
+        // Notify server immediately when page is hidden or closed to update count under 1s
+        window.addEventListener('pagehide', leaveLobby);
+        window.addEventListener('beforeunload', leaveLobby);
+
+        // Scroll to Bottom Helper
+        function scrollToBottom() {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        window.addEventListener('load', scrollToBottom);
+
+        const loadedMessageIds = new Set();
+
+        function appendMessageHTML(msg) {
+            if (loadedMessageIds.has(msg.id)) return;
+            loadedMessageIds.add(msg.id);
+
+            const isOutgoing = msg.username === sessionUser;
+            const msgRow = document.createElement('div');
+            msgRow.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
+            
+            // Format time
+            const date = new Date(msg.created_at || Date.now());
+            const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Format rank display
+            let rankText = '';
+            if (msg.rank) {
+                let rankNum = parseInt(msg.rank);
+                let rankName = 'BRONZE';
+                let tierColor = '#cd7f32';
+                
+                if (rankNum <= 10) { rankName = '👑 MYTHIC'; tierColor = '#ff3366'; }
+                else if (rankNum <= 50) { rankName = 'GRANDMASTER'; tierColor = '#ff00ff'; }
+                else if (rankNum <= 100) { rankName = 'MASTER'; tierColor = '#9932cc'; }
+                else if (rankNum <= 500) { rankName = 'DIAMOND'; tierColor = '#00e5ff'; }
+                else if (rankNum <= 1000) { rankName = 'PLATINUM'; tierColor = '#00ff88'; }
+                else if (rankNum <= 5000) { rankName = 'GOLD'; tierColor = '#FFD700'; }
+                else if (rankNum <= 10000) { rankName = 'SILVER'; tierColor = '#c0c0c0'; }
+                
+                rankText = `<span class="user-rank" style="color: ${tierColor}; font-size: 9px; font-weight: 800; letter-spacing: 1px; margin-left: 6px;">[${rankName} #${rankNum}]</span>`;
+            } else {
+                // Custom rank for known bot accounts
+                const botUsernames = ['ApexPredator', 'SniperPro_99', 'Combat_Ready', 'NeoViper', 'EchoSeven'];
+                if (botUsernames.includes(msg.username)) {
+                    rankText = `<span class="user-rank" style="color: #ffaa00; font-size: 9px; font-weight: 800; letter-spacing: 1px; margin-left: 6px;">[BOT LOBBYIST]</span>`;
+                }
+            }
+
+            // Format avatar
+            let avatarHtml = '';
+            if (msg.avatar_url && (msg.avatar_url.startsWith('data:image') || msg.avatar_url.startsWith('http'))) {
+                avatarHtml = `<img src="${msg.avatar_url}" class="user-avatar" alt="Avatar">`;
+            } else {
+                // Check if it's a known bot avatar or fallback
+                const botAvatars = {
+                    'ApexPredator': 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&h=100&q=80',
+                    'SniperPro_99': 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=100&h=100&q=80',
+                    'Combat_Ready': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80',
+                    'NeoViper': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&h=100&q=80',
+                    'EchoSeven': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&h=100&q=80'
+                };
+                
+                if (botAvatars[msg.username]) {
+                    avatarHtml = `<img src="${botAvatars[msg.username]}" class="user-avatar" alt="Avatar">`;
+                } else {
+                    const firstLetter = msg.username.charAt(0).toUpperCase();
+                    avatarHtml = `<div class="user-avatar" style="display:flex; align-items:center; justify-content:center; background:rgba(0, 229, 255, 0.1); border:1px solid var(--primary-color); color:var(--primary-color); font-weight:800; font-size:12px;">${firstLetter}</div>`;
+                }
+            }
+
+            let msgContentHtml = '';
+            if (msg.message.startsWith('data:image/')) {
+                msgContentHtml = `<img src="${msg.message}" class="chat-attached-image" style="max-width: 200px; max-height: 200px; border-radius: 8px; display: block; border: 1px solid var(--border-color); margin-top: 4px; cursor: pointer;" onclick="window.open('${msg.message}', '_blank')">`;
+            } else if (msg.message.startsWith('data:audio/')) {
+                msgContentHtml = `
+                    <div style="margin-top: 4px; display: flex; align-items: center;">
+                        <audio src="${msg.message}" controls style="max-width: 240px; height: 38px; border-radius: 19px; background: rgba(0,0,0,0.15); outline: none;"></audio>
+                    </div>
+                `;
+            } else if (msg.message.startsWith('data:')) {
+                const mimeType = msg.message.split(';')[0].split(':')[1] || 'application/octet-stream';
+                const extension = mimeType.split('/')[1] || 'bin';
+                msgContentHtml = `
+                    <a href="${msg.message}" download="attachment.${extension}" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary-color); background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.2); padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-top: 4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 13 7 8"></polyline><line x1="12" y1="3" x2="12" y2="13"></line></svg>
+                        <span>DOWNLOAD ATTACHMENT (${extension.toUpperCase()})</span>
+                    </a>
+                `;
+            } else {
+                msgContentHtml = escapeHTML(msg.message);
+            }
+
+            msgRow.innerHTML = `
+                ${avatarHtml}
+                <div class="message-content-wrap">
+                    <span class="sender-username">${msg.username}${rankText}</span>
+                    <div class="message-bubble">${msgContentHtml}</div>
+                    <span class="message-time">${timeString}</span>
+                </div>
+            `;
+            
+            chatBody.appendChild(msgRow);
+        }
+
+        async function loadMessageHistory() {
+            try {
+                const response = await fetch(`${API_URL}/lobby/messages?gameName=${encodeURIComponent(gameName)}`);
+                const data = await response.json();
+                if (data.success) {
+                    chatBody.innerHTML = '';
+                    data.messages.forEach(msg => {
+                        appendMessageHTML(msg);
+                    });
+                    scrollToBottom();
+                }
+            } catch (err) {
+                console.error("Failed to load message history:", err);
+            }
+        }
+
+        async function pollNewMessages() {
+            try {
+                const response = await fetch(`${API_URL}/lobby/messages?gameName=${encodeURIComponent(gameName)}`);
+                const data = await response.json();
+                if (data.success) {
+                    let hasNew = false;
+                    data.messages.forEach(msg => {
+                        if (!loadedMessageIds.has(msg.id)) {
+                            appendMessageHTML(msg);
+                            hasNew = true;
+                        }
+                    });
+                    if (hasNew) {
+                        scrollToBottom();
+                        // Play notification receive sound if the last message is from someone else
+                        const lastMsg = data.messages[data.messages.length - 1];
+                        if (lastMsg && lastMsg.username !== sessionUser) {
+                            try {
+                                recvSound.currentTime = 0;
+                                recvSound.play();
+                            } catch (err) {}
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to poll new messages:", err);
+            }
+        }
+
+        // Load history and start polling
+        loadMessageHistory();
+        setInterval(pollNewMessages, 1000);
+
+        // Send Message Handler
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            messageInput.value = '';
+
+            // Play notification send sound locally immediately
+            try {
+                sendSound.currentTime = 0;
+                sendSound.play();
+            } catch (err) {}
+
+            try {
+                // Post message to backend
+                await fetch(`${API_URL}/lobby/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameName, username: sessionUser, message: text })
+                });
+                
+                // Immediately poll new messages
+                pollNewMessages();
+
+                // Trigger bot reply after 1.5 seconds if sent by a real user
+                const botUsernames = ['ApexPredator', 'SniperPro_99', 'Combat_Ready', 'NeoViper', 'EchoSeven'];
+                if (!botUsernames.includes(sessionUser)) {
+                    setTimeout(async () => {
+                        const replies = [
+                            `No way! Added you. Let's mic up! 🎙️`,
+                            `Roger that, Operator! Standing by.`,
+                            `Add me too! Standard ID: SquadLeader_${gameName.replace(/\s+/g, '')}`,
+                            `Joined your queue lobby, let's sync matches.`,
+                            `Copy that! Coordinate the drop zone!`
+                        ];
+                        const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                        const usernames = ['ApexPredator', 'SniperPro_99', 'Combat_Ready', 'NeoViper', 'EchoSeven'];
+                        const randomUsername = usernames[Math.floor(Math.random() * usernames.length)];
+
+                        // Save bot reply to backend database
+                        await fetch(`${API_URL}/lobby/messages`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ gameName, username: randomUsername, message: randomReply })
+                        });
+
+                        // Poll again to show bot's reply
+                        pollNewMessages();
+                    }, 1500);
+                }
+
+            } catch (err) {
+                console.error("Failed to send message:", err);
+            }
+        });
+
+        // Voice Message Node visualizer animation
+        function playVoice(btn) {
+            const bars = btn.nextElementSibling.querySelectorAll('.voice-bar');
+            
+            // Check if already playing
+            if (btn.classList.contains('playing')) {
+                btn.classList.remove('playing');
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+                bars.forEach(bar => bar.classList.remove('active'));
+            } else {
+                btn.classList.add('playing');
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
+                bars.forEach(bar => bar.classList.add('active'));
+
+                // Mock Voice Stop after 3 seconds
+                setTimeout(() => {
+                    btn.classList.remove('playing');
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+                    bars.forEach(bar => bar.classList.remove('active'));
+                }, 3000);
+            }
+        }
+
+        // Voice Streaming Handler
+        let voiceActive = false;
+        function toggleVoiceStreaming() {
+            voiceActive = !voiceActive;
+            const headerCallBtn = document.querySelector('.header-call-btn');
+            if (voiceActive) {
+                voiceModal.classList.add('active');
+                voiceChatBtn.classList.add('voice-active');
+                if (headerCallBtn) headerCallBtn.classList.add('voice-active');
+            } else {
+                voiceModal.classList.remove('active');
+                voiceChatBtn.classList.remove('voice-active');
+                if (headerCallBtn) headerCallBtn.classList.remove('voice-active');
+            }
+        }
+
+        // Action Handlers
+        function openMockCamera() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 480;
+            if (isMobile) {
+                openBottomSheet();
+            } else {
+                document.getElementById('cameraInput').click();
+            }
+        }
+
+        function openMockAttachment() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 480;
+            if (isMobile) {
+                openBottomSheet();
+            } else {
+                document.getElementById('documentInput').click();
+            }
+        }
+
+        function openBottomSheet() {
+            document.getElementById('sheetBackdrop').classList.add('active');
+            document.getElementById('attachmentSheet').classList.add('active');
+        }
+
+        function closeBottomSheet() {
+            document.getElementById('sheetBackdrop').classList.remove('active');
+            document.getElementById('attachmentSheet').classList.remove('active');
+        }
+
+        function triggerSheetInput(type) {
+            closeBottomSheet();
+            if (type === 'camera') {
+                document.getElementById('cameraInput').click();
+            } else if (type === 'gallery') {
+                document.getElementById('galleryInput').click();
+            } else if (type === 'document') {
+                document.getElementById('documentInput').click();
+            } else if (type === 'audio') {
+                document.getElementById('audioInput').click();
+            }
+        }
+
+        async function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Limit file size to 2MB to keep DB storage reasonable
+            if (file.size > 2 * 1024 * 1024) {
+                alert('File size exceeds the 2MB limit for transmissions.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const base64Data = reader.result;
+                try {
+                    // Play notification send sound locally immediately
+                    try {
+                        sendSound.currentTime = 0;
+                        sendSound.play();
+                    } catch (err) {}
+
+                    // Post message to backend
+                    await fetch(`${API_URL}/lobby/messages`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ gameName, username: sessionUser, message: base64Data })
+                    });
+                    
+                    // Immediately poll new messages
+                    pollNewMessages();
+
+                    // Trigger bot reply after 1.5 seconds if sent by a real user
+                    const botUsernames = ['ApexPredator', 'SniperPro_99', 'Combat_Ready', 'NeoViper', 'EchoSeven'];
+                    if (!botUsernames.includes(sessionUser)) {
+                        setTimeout(async () => {
+                            const replies = [
+                                `Awesome upload! Let's check it. 📁`,
+                                `Clear visual connection established.`,
+                                `Scanning file payload... clean.`,
+                                `Roger that, Operator! Standing by.`,
+                                `Data sync complete.`
+                            ];
+                            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                            const usernames = ['ApexPredator', 'SniperPro_99', 'Combat_Ready', 'NeoViper', 'EchoSeven'];
+                            const randomUsername = usernames[Math.floor(Math.random() * usernames.length)];
+
+                            await fetch(`${API_URL}/lobby/messages`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ gameName, username: randomUsername, message: randomReply })
+                            });
+
+                            pollNewMessages();
+                        }, 1500);
+                    }
+                } catch (err) {
+                    console.error("Failed to send attachment:", err);
+                }
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+
+        // Security escape logic
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+    <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display: none;">
+    <input type="file" accept="image/*" id="galleryInput" style="display: none;">
+    <input type="file" accept="*" id="documentInput" style="display: none;">
+    <input type="file" accept="audio/*" id="audioInput" style="display: none;">
+
+    <div class="bottom-sheet-backdrop" id="sheetBackdrop" onclick="closeBottomSheet()"></div>
+    <div class="bottom-sheet" id="attachmentSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">Attach File</div>
+        <div class="sheet-grid">
+            <div class="sheet-grid-item" onclick="triggerSheetInput('camera')">
+                <div class="sheet-icon-wrap" style="background: linear-gradient(135deg, #ff2a6d, #ff6200);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </div>
+                <span class="sheet-label">Camera</span>
+            </div>
+            <div class="sheet-grid-item" onclick="triggerSheetInput('gallery')">
+                <div class="sheet-icon-wrap" style="background: linear-gradient(135deg, #00e5ff, #0088ff);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </div>
+                <span class="sheet-label">Gallery</span>
+            </div>
+            <div class="sheet-grid-item" onclick="triggerSheetInput('document')">
+                <div class="sheet-icon-wrap" style="background: linear-gradient(135deg, #7b2cbf, #9d4edd);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <span class="sheet-label">Document</span>
+            </div>
+            <div class="sheet-grid-item" onclick="triggerSheetInput('audio')">
+                <div class="sheet-icon-wrap" style="background: linear-gradient(135deg, #00ff88, #00b0ff);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                </div>
+                <span class="sheet-label">Audio</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('cameraInput').addEventListener('change', handleFileSelect);
+        document.getElementById('galleryInput').addEventListener('change', handleFileSelect);
+        document.getElementById('documentInput').addEventListener('change', handleFileSelect);
+        document.getElementById('audioInput').addEventListener('change', handleFileSelect);
+    </script>
+</body>
+</html>

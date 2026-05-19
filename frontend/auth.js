@@ -1,6 +1,94 @@
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+const isLocalhost = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname || window.location.protocol === 'file:');
+const isCapacitor = typeof window !== 'undefined' && (window.Capacitor || window.location.protocol === 'capacitor:');
+const API_BASE = (isLocalhost && !isCapacitor)
     ? 'http://localhost:3050/api' 
     : 'https://voxachat-jbyj.onrender.com/api';
+
+
+window.showNotification = function(message, type = 'error') {
+    const existing = document.getElementById('voxa-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'voxa-toast';
+    
+    const isError = type === 'error';
+    const borderColor = isError ? 'var(--error-color, #ff3366)' : 'var(--primary-color, #00e5ff)';
+    const glowColor = isError ? 'rgba(255, 51, 102, 0.25)' : 'rgba(0, 229, 255, 0.25)';
+    const title = isError ? 'PROTOCOL DENIED' : 'SYSTEM UPDATE';
+    const titleColor = isError ? '#ff3366' : '#00e5ff';
+    const icon = isError 
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${borderColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${borderColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+
+    Object.assign(toast.style, {
+        position: 'fixed',
+        top: '24px',
+        left: '50%',
+        transform: 'translateX(-50%) translateY(-20px)',
+        width: '90%',
+        maxWidth: '380px',
+        background: 'rgba(26, 28, 41, 0.95)',
+        backdropFilter: 'blur(12px)',
+        webkitBackdropFilter: 'blur(12px)',
+        border: `1px solid ${borderColor}`,
+        borderRadius: '16px',
+        padding: '16px 20px',
+        boxShadow: `0 10px 30px rgba(0,0,0,0.5), 0 0 20px ${glowColor}`,
+        color: '#ffffff',
+        zIndex: '100000',
+        display: 'flex',
+        alignItems: 'start',
+        gap: '14px',
+        opacity: '0',
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        cursor: 'pointer'
+    });
+
+    toast.innerHTML = `
+        <div style="margin-top: 2px; flex-shrink: 0;">${icon}</div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: 2px; color: ${titleColor}; text-transform: uppercase;">${title}</div>
+            <div style="font-size: 13.5px; font-weight: 500; line-height: 1.4; color: #e2e8f0; font-family: 'Inter', sans-serif;">${message}</div>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    toast.offsetHeight; // Force layout
+
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
+
+    const dismissTimeout = setTimeout(dismiss, 4000);
+
+    function dismiss() {
+        toast.style.transform = 'translateX(-50%) translateY(-20px)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+    }
+
+    toast.onclick = () => {
+        clearTimeout(dismissTimeout);
+        dismiss();
+    };
+};
+
+const originalAlert = window.alert;
+window.alert = function(msg) {
+    if (typeof msg === 'string') {
+        const lower = msg.toLowerCase();
+        const isSuccess = lower.includes('success') || 
+                          lower.includes('clearance requested') || 
+                          lower.includes('verified') || 
+                          lower.includes('complete') ||
+                          lower.includes('initiated') ||
+                          lower.includes('sent');
+        window.showNotification(msg, isSuccess ? 'success' : 'error');
+    } else {
+        originalAlert(msg);
+    }
+};
 
 window.togglePassword = function(inputId, iconElement) {
     const input = document.getElementById(inputId);
@@ -48,6 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         rank: data.rank,
                         avatar: data.avatar
                     }));
+                    if (data.reactivated) {
+                        localStorage.setItem('voxa_reactivated', 'true');
+                    }
                     window.location.href = 'dashboard.html';
                 } else {
                     alert(data.error || 'Connection Failed');
@@ -135,21 +226,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (forgotForm) {
         forgotForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const btn = document.getElementById('forgotBtn');
             const originalText = btn.innerHTML;
             
             try {
                 btn.innerHTML = 'SENDING...';
                 btn.disabled = true;
-                // Hook up to actual forgot password backend route
-                setTimeout(() => {
-                    alert(`Recovery protocol initiated for ${email}`);
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }, 1000);
+                
+                const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(data.message || `Recovery protocol initiated for ${email}`);
+                } else {
+                    alert(data.error || 'Failed to initiate recovery');
+                }
             } catch (err) {
                 alert('Network Error');
+            } finally {
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         });
